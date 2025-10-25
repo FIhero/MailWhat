@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}Логи рассылок - WS{% endblock %}
+
+{% block content %}
+<div class="attempts-header">
+    <h1>Логи рассылок</h1>
+    <div class="header-actions">
+        {% if filtered_mailing %}
+        <a href="{% url 'mailing:attempt_list' %}" class="btn btn-small">Все логи</a>
+        {% endif %}
+        <button class="btn btn-small" onclick="exportLogs()">Экспорт</button>
+    </div>
+</div>
+
+<div class="attempts-container">
+    <div class="attempts-stats">
+        <div class="stat-card">
+            <span class="stat-number">{{ total_attempts|default:0 }}</span>
+            <span class="stat-label">Всего попыток</span>
+        </div>
+        <div class="stat-card stat-success">
+            <span class="stat-number">{{ successful_attempts|default:0 }}</span>
+            <span class="stat-label">Успешных</span>
+        </div>
+        <div class="stat-card stat-failure">
+            <span class="stat-number">{{ failed_attempts|default:0 }}</span>
+            <span class="stat-label">Неудачных</span>
+        </div>
+    </div>
+    {% if filtered_mailing %}
+    <div class="filter-info">
+        <div class="filter-card">
+            <h3>Фильтр по рассылке</h3>
+            <p><strong>Тема:</strong> 
+                {% if filtered_mailing.message %}
+                    {{ filtered_mailing.message.message_subject }}
+                {% else %}
+                    Сообщение удалено
+                {% endif %}
+            </p>
+            <p><strong>Период:</strong> 
+                {% if filtered_mailing.start_time %}
+                    {{ filtered_mailing.start_time|date:"d.m.Y H:i" }} - {{ filtered_mailing.end_time|date:"d.m.Y H:i" }}
+                {% else %}
+                    Не указан
+                {% endif %}
+            </p>
+            <p><strong>Статус:</strong> 
+                {% if filtered_mailing.status == 'created' %}Создана
+                {% elif filtered_mailing.status == 'started' %}Запущена  
+                {% elif filtered_mailing.status == 'completed' %}Завершена
+                {% else %}Неизвестен
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="attempts-actions">
+        <div class="search-box">
+            <input type="text" id="attemptSearch" placeholder="🔍 Поиск по логам(тема, email, ответ сервера)..." class="search-input">
+        </div>
+<div class="filter-actions">
+    <button class="btn btn-small btn-filter active" onclick="filterAttempts('all')">Все</button>
+    <button class="btn btn-small btn-filter btn-success" onclick="filterAttempts('success')">Успешные</button>
+    <button class="btn btn-small btn-filter btn-danger" onclick="filterAttempts('failure')">Ошибки</button>
+</div>
+    </div>
+
+    <div class="attempts-list">
+        {% if attempts %}
+            {% for attempt in attempts %}
+            <div class="attempt-card status-{{ attempt.status }}" data-attempt-id="{{ attempt.pk }}">
+                <div class="attempt-header">
+                    <div class="attempt-main">
+                        <div class="attempt-title">
+                            <h3>
+                                {% if attempt.status == 'success' %}
+                                    ✅ 
+                                {% else %}
+                                    ❌ 
+                                {% endif %}
+                                Рассылка #{{ attempt.mailing_list.id }}
+                            </h3>
+                            <span class="attempt-time">{{ attempt.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        <div class="attempt-subject">
+                            <strong>Тема:</strong> 
+                            {% if attempt.mailing_list and attempt.mailing_list.message %}
+                                {{ attempt.mailing_list.message.message_subject }}
+                            {% else %}
+                                Тема не указана
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="attempt-status">
+                        <span class="status-badge status-{{ attempt.status }}">
+                            {% if attempt.status == 'success' %}
+                                Успешно
+                            {% else %}
+                                Ошибка
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="attempt-details">
+                    <div class="detail-row">
+                        <div class="detail-item">
+                            <strong>Рассылка:</strong> 
+                            {% if attempt.mailing_list %}
+                                <a href="{% url 'mailing:mailing_list' %}" class="detail-link">
+                                    #{{ attempt.mailing_list.id }} - 
+                                    {% if attempt.mailing_list.message %}
+                                        {{ attempt.mailing_list.message.message_subject|truncatewords:5 }}
+                                    {% else %}
+                                        Без темы
+                                    {% endif %}
+                                </a>
+                            {% else %}
+                                Рассылка удалена
+                            {% endif %}
+                        </div>
+                        <div class="detail-item">
+                            <strong>Время попытки:</strong> {{ attempt.created_at|date:"d.m.Y H:i:s" }}
+                        </div>
+                    </div>
+
+                    {% if attempt.server_response %}
+                    <div class="detail-row">
+                        <div class="detail-item full-width">
+                            <strong>Ответ сервера:</strong>
+                            <div class="server-response">
+                                {{ attempt.server_response }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if attempt.status == 'failure' %}
+                    <div class="error-info">
+                        <div class="error-icon">⚠️</div>
+                        <div class="error-text">
+                            <strong>Возможные причины ошибки:</strong>
+                            <ul class="error-reasons">
+                                <li>Неверный email адрес</li>
+                                <li>Проблемы с SMTP сервером</li>
+                                <li>Превышен лимит отправки</li>
+                                <li>Ошибка аутентификации</li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="attempt-actions">
+                    <button class="btn btn-small" onclick="retryAttempt('{{ attempt.pk }}')" 
+                            {% if attempt.status == 'success' %}disabled{% endif %}>
+                        Повторить
+                    </button>
+                    <button class="btn btn-small" onclick="showMailingDetails('{{ attempt.pk }}')">
+                        Подробнее
+                    </button>
+                    <a href="{% url 'mailing:attempt_list' %}?mailing={{ attempt.mailing_list.pk }}" 
+                       class="btn btn-small">
+                        Все логи этой рассылки
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <h2>Нет логов отправки</h2>
+                <p>
+                    {% if filtered_mailing %}
+                        Для выбранной рассылки пока нет логов отправки.
+                    {% else %}
+                        {% if total_attempts == 0 %}
+                            Логи отправки появятся здесь после запуска рассылок.
+                        {% else %}
+                            Нет логов, соответствующих текущему фильтру.
+                        {% endif %}
+                    {% endif %}
+                </p>
+                <a href="{% url 'mailing:mailing_list' %}" class="btn btn-accent">
+                    Перейти к рассылкам
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('attemptSearch');
+    const attemptCards = document.querySelectorAll('.attempt-card');
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        
+        attemptCards.forEach(card => {
+            const attemptText = card.textContent.toLowerCase();
+            const matches = attemptText.includes(searchTerm) || searchTerm === '';
+            
+            if (matches) {
+                card.classList.remove('hidden');
+                card.classList.add('visible');
+            } else {
+                card.classList.remove('visible');
+                card.classList.add('hidden');
+            }
+        });
+    });
+});
+
+function filterAttempts(filterType) {
+    const attemptCards = document.querySelectorAll('.attempt-card');
+    
+    attemptCards.forEach(card => {
+        const isSuccess = card.classList.contains('status-success');
+        const isFailure = card.classList.contains('status-failure');
+        
+        switch(filterType) {
+            case 'all':
+                card.classList.remove('hidden');
+                card.classList.add('visible');
+                break;
+            case 'success':
+                if (isSuccess) {
+                    card.classList.remove('hidden');
+                    card.classList.add('visible');
+                } else {
+                    card.classList.remove('visible');
+                    card.classList.add('hidden');
+                }
+                break;
+            case 'failure':
+                if (isFailure) {
+                    card.classList.remove('hidden');
+                    card.classList.add('visible');
+                } else {
+                    card.classList.remove('visible');
+                    card.classList.add('hidden');
+                }
+                break;
+        }
+    });
+}
+
+function retryAttempt(attemptId) {
+    showModal(
+        'Повторная отправка',
+        'Вы уверены, что хотите повторить отправку для этой попытки?',
+        function() {
+            alert('Повторная отправка запущена для попытки ID: ' + attemptId);
+            closeModal(); 
+        }
+    );
+}
+
+function showDetails(attemptId) {
+    alert('Детальная информация для попытки ID: ' + attemptId);
+}
+
+function exportLogs() {
+    alert('Экспорт логов в процессе разработки');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+<div class="attempt-card status-{{ attempt.status }}">
+    <div class="attempt-header">
+        <div class="attempt-main">
+            <div class="attempt-title">
+                <h3>
+                    {% if attempt.status == 'success' %} ✅ {% else %} ❌ {% endif %}
+                    Рассылка #{{ attempt.mailing_list.id }}
+                </h3>
+                <span class="attempt-time">{{ attempt.created_at|date:"d.m.Y H:i" }}</span>
+            </div>
+            <div class="attempt-subject">
+                <strong>Тема:</strong> 
+                {% if attempt.mailing_list and attempt.mailing_list.message %}
+                    {{ attempt.mailing_list.message.message_subject }}
+                {% else %}
+                    Тема не указана
+                {% endif %}
+            </div>
+        </div>
+        <div class="attempt-status">
+            <span class="status-badge status-{{ attempt.status }}">
+                {% if attempt.status == 'success' %}Успешно{% else %}Ошибка{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="attempt-details">
+    </div>
+
+    <div class="attempt-actions">
+        <button class="btn btn-small" onclick="showMailingDetails('{{ attempt.pk }}')">
+            Подробнее
+        </button>
+        <a href="{% url 'mailing:attempt_list' %}?mailing={{ attempt.mailing_list.pk }}" 
+           class="btn btn-small">
+            Все логи этой рассылки
+        </a>
+    </div>
+</div>

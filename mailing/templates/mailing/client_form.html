@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if object %}Редактирование клиента{% else %}Добавление клиента{% endif %} - WS
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>{% if object %}Редактирование клиента{% else %}Добавление клиента{% endif %}</h1>
+        <p>{% if object %}Измените данные клиента{% else %}Заполните форму для добавления нового клиента в базу{% endif %}</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post" class="client-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                {% for error in form.non_field_errors %}
+                    <div class="error-message">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="form-grid">
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="{{ form.full_name.id_for_label }}" class="form-label">
+                            ФИО клиента
+                        </label>
+                        <input type="text" name="full_name" 
+                               value="{{ form.full_name.value|default:'' }}"
+                               class="form-input" 
+                               placeholder="Введите полное имя клиента"
+                               maxlength="100" 
+                               required 
+                               id="id_full_name">
+                        {% if form.full_name.errors %}
+                        <div class="field-errors">
+                            {% for error in form.full_name.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            Email адрес
+                        </label>
+                        <input type="email" name="email" 
+                               value="{{ form.email.value|default:'' }}"
+                               class="form-input" 
+                               placeholder="example@mail.com"
+                               required 
+                               id="id_email">
+                        {% if form.email.errors %}
+                        <div class="field-errors">
+                            {% for error in form.email.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-help">
+                            Email должен быть уникальным для каждого клиента
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="{{ form.comment.id_for_label }}" class="form-label">
+                            Комментарий (необязательно)
+                        </label>
+                        <textarea name="comment" 
+                                  class="form-textarea" 
+                                  placeholder="Дополнительная информация о клиенте..."
+                                  rows="4"
+                                  id="id_comment">{{ form.comment.value|default:'' }}</textarea>
+                        {% if form.comment.errors %}
+                        <div class="field-errors">
+                            {% for error in form.comment.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="char-counter">
+                            <span id="char-count">0</span> / 500 символов
+                        </div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h3>Предпросмотр карточки</h3>
+                        <div class="preview-card">
+                            <div class="preview-avatar">
+                                <span id="preview-initial">?</span>
+                            </div>
+                            <div class="preview-info">
+                                <div id="preview-name" class="preview-name">Имя клиента</div>
+                                <div id="preview-email" class="preview-email">email@example.com</div>
+                                <div id="preview-comment" class="preview-comment">
+                                    Комментарий появится здесь
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tips-section">
+                <h3>💡 Советы по заполнению:</h3>
+                <div class="tips-grid">
+                    <div class="tip-item">
+                        <strong>ФИО:</strong> Используйте полное имя для лучшей персонализации рассылок
+                    </div>
+                    <div class="tip-item">
+                        <strong>Email:</strong> Убедитесь, что email корректен и активен
+                    </div>
+                    <div class="tip-item">
+                        <strong>Комментарий:</strong> Добавляйте заметки о предпочтениях клиента
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+    <button type="submit" class="btn btn-accent btn-large">
+        {% if object %}Сохранить изменения{% else %}Добавить клиента{% endif %}
+    </button>
+    <a href="{% url 'mailing:client_list' %}" class="btn btn-cancel btn-large">
+        Отмена
+    </a>
+    {% if object %}
+    <a href="#" class="btn btn-danger delete-btn"
+        data-delete-url="{% url 'mailing:client_delete' object.pk %}"
+        data-object-name="{{ object.full_name }}">
+            Удалить клиента
+        </a>
+    {% endif %}
+</div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nameInput = document.getElementById('id_full_name');
+    const emailInput = document.getElementById('id_email');
+    const commentTextarea = document.getElementById('id_comment');
+    const charCount = document.getElementById('char-count');
+    
+    nameInput.addEventListener('input', function() {
+        updatePreview();
+        updateAvatarInitial();
+    });
+    
+    emailInput.addEventListener('input', updatePreview);
+    
+    commentTextarea.addEventListener('input', function() {
+        updatePreview();
+        updateCharCount();
+    });
+    
+    function updatePreview() {
+        // Обновление имени
+        const name = nameInput.value.trim() || 'Имя клиента';
+        document.getElementById('preview-name').textContent = name;
+        
+        // Обновление email
+        const email = emailInput.value.trim() || 'email@example.com';
+        document.getElementById('preview-email').textContent = email;
+        
+        // Обновление комментария
+        const comment = commentTextarea.value.trim();
+        if (comment) {
+            document.getElementById('preview-comment').textContent = comment;
+            document.getElementById('preview-comment').style.display = 'block';
+        } else {
+            document.getElementById('preview-comment').textContent = 'Комментарий появится здесь';
+            document.getElementById('preview-comment').style.display = 'block';
+        }
+    }
+    
+    function updateAvatarInitial() {
+        const name = nameInput.value.trim();
+        const initial = name ? name.charAt(0).toUpperCase() : '?';
+        document.getElementById('preview-initial').textContent = initial;
+    }
+    
+    function updateCharCount() {
+        const count = commentTextarea.value.length;
+        charCount.textContent = count;
+        
+        // Изменение цвета при приближении к лимиту
+        if (count > 450) {
+            charCount.style.color = '#e74c3c';
+            charCount.style.fontWeight = 'bold';
+        } else if (count > 400) {
+            charCount.style.color = '#f39c12';
+        } else {
+            charCount.style.color = 'var(--primary-active)';
+            charCount.style.fontWeight = 'normal';
+        }
+    }
+    
+    // Валидация email в реальном времени
+    emailInput.addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (email && !isValidEmail(email)) {
+            this.style.borderColor = '#e74c3c';
+            this.style.boxShadow = '0 0 0 3px rgba(231, 76, 60, 0.2)';
+        } else {
+            this.style.borderColor = '';
+            this.style.boxShadow = '';
+        }
+    });
+    
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    // Инициализация при загрузке
+    updatePreview();
+    updateAvatarInitial();
+    updateCharCount();
+});
+</script>
+{% endblock %}

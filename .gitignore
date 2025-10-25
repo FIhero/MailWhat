@@ -6,19 +6,49 @@ __pycache__/
 local_settings.py
 db.sqlite3
 media/
+staticfiles/
+
+# Database
+*.sqlite3
+*.db
 
 # Virtual environment
 venv/
 env/
+.venv/
+ENV/
+
+# Environment variables
+.env
+.env.local
+.env.prod
+.env.dev
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
+Desktop.ini
 
-Настройка U
+# Project specific
+emails/  # если используете файловый бэкенд для писем
+backups/
+temp/
+
+# Static files (если собираете статику)
+/static_collected/
+
+# Logs
+logs/
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*

@@ -1,0 +1,103 @@
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Подтверждение</h3>
+            <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p id="modal-message">Вы уверены, что хотите выполнить это действие?</p>
+        </div>
+        <div class="modal-actions">
+            <button id="modal-cancel" class="btn btn-cancel">Отмена</button>
+            <button id="modal-confirm" class="btn btn-accent">Подтвердить</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        animation: fadeIn 0.3s;
+    }
+
+    .modal-content {
+        background-color: var(--text-light);
+        margin: 10% auto;
+        padding: 0;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary-active));
+        color: white;
+        padding: 20px;
+        border-radius: 15px 15px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        color: white;
+        border-bottom: none;
+    }
+
+    .modal-close {
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .modal-close:hover {
+        transform: scale(1.2);
+    }
+
+    .modal-body {
+        padding: 30px;
+        color: var(--primary-dark);
+        font-size: 1.1em;
+        line-height: 1.5;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        padding: 20px 30px;
+        border-top: 1px solid rgba(17, 34, 80, 0.1);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+        .modal-content {
+            margin: 20% auto;
+            width: 95%;
+        }
+        
+        .modal-actions {
+            flex-direction: column;
+        }
+    }
+</style>

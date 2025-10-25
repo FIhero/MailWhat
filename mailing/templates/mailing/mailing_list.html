@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Рассылки - WS{% endblock %}
+
+{% block content %}
+<div class="mailings-header">
+    <h1>Рассылки</h1>
+    <a href="{% url 'mailing:mailing_create' %}" class="btn btn-accent">Новая рассылка</a>
+</div>
+
+<div class="mailings-container">
+    {% if mailings %}
+        <div class="mailings-stats">
+            <div class="stat-card">
+                <span class="stat-number">{{ mailings.count }}</span>
+                <span class="stat-label">Всего рассылок</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">{{ mailings|length }}</span>
+                <span class="stat-label">Активных</span>
+            </div>
+        </div>
+
+        <div class="mailings-list">
+            {% for mailing in mailings %}
+            <div class="mailing-card {% if mailing.status == 'started' %}status-active{% elif mailing.status == 'completed' %}status-completed{% else %}status-created{% endif %}">
+                <div class="mailing-header">
+                    <div class="mailing-info">
+                        <h3 class="mailing-title">{{ mailing.message.message_subject }}</h3>
+                        <div class="mailing-meta">
+                            <span class="mailing-status status-{{ mailing.status }}">
+                                {% if mailing.status == 'created' %}Создана
+                                {% elif mailing.status == 'started' %}Запущена  
+                                {% elif mailing.status == 'completed' %}Завершена
+                                {% endif %}
+                            </span>
+                            <span class="mailing-date">📅 {{ mailing.start_time|date:"d.m.Y H:i" }}</span>
+                            <span class="mailing-recipients">👥 {{ mailing.clients.count }} получателей</span>
+                        </div>
+                    </div>
+                    <div class="mailing-actions">
+    <a href="{% url 'mailing:mailing_update' mailing.pk %}" 
+       class="btn btn-square btn-small" 
+       title="Редактировать">
+        <span class="btn-icon">✏️</span>
+    </a>
+    <a href="#" 
+       class="btn btn-square btn-small delete-btn" 
+       title="Удалить"
+       data-delete-url="{% url 'mailing:mailing_delete' mailing.pk %}"
+       data-object-name="Рассылка: {{ mailing.message.message_subject }}">
+        <span class="btn-icon">🗑️</span>
+    </a>
+    {% if mailing.status == 'created' %}
+    <a href="{% url 'mailing:mailing_send' mailing.pk %}"
+       class="btn btn-small btn-success"
+       onclick="confirmMailingSend(this.href); return false;">
+        Отправить
+    </a>
+    {% endif %}
+</div>
+                </div>
+                
+                <div class="mailing-content">
+                    <p class="mailing-message">{{ mailing.message.message_body|truncatewords:30 }}</p>
+                    
+                    <div class="mailing-details">
+                        <div class="detail-item">
+                            <strong>Сообщение:</strong> {{ mailing.message.message_subject }}
+                        </div>
+                        <div class="detail-item">
+                            <strong>Период:</strong> {{ mailing.start_time|date:"d.m.Y H:i" }} - {{ mailing.end_time|date:"d.m.Y H:i" }}
+                        </div>
+                        {% if mailing.clients.all %}
+                        <div class="detail-item">
+                            <strong>Получатели:</strong>
+                            <div class="recipients-list">
+                                {% for client in mailing.clients.all|slice:":3" %}
+                                <span class="recipient-tag">{{ client.full_name }}</span>
+                                {% endfor %}
+                                {% if mailing.clients.count > 3 %}
+                                <span class="recipient-more">+{{ mailing.clients.count|add:"-3" }} ещё</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mailing-footer">
+                    <a href="{% url 'mailing:attempt_list' %}?mailing={{ mailing.pk }}" class="btn-link">
+                        Посмотреть логи отправки
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h2>Нет рассылок</h2>
+            <p>У вас пока нет созданных рассылок. Создайте первую!</p>
+            <a href="{% url 'mailing:mailing_create' %}" class="btn btn-accent">Создать рассылку</a>
+        </div>
+    {% endif %}
+</div>
+
+
+
+<script>
+function sendMailing(mailingId) {
+    if (confirm('Запустить рассылку сейчас?')) {
+        alert('Рассылка запущена! ID: ' + mailingId);
+    }
+}
+</script>
+{% endblock %}

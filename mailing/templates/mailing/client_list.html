@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Клиенты - WS{% endblock %}
+
+{% block content %}
+<div class="clients-header">
+    <h1>Клиенты</h1>
+    <a href="{% url 'mailing:client_create' %}" class="btn btn-accent">➕ Добавить клиента</a>
+</div>
+
+<div class="clients-container">
+    {% if clients %}
+<div class="clients-stats">
+    <div class="stat-card">
+        <span class="stat-number">{{ clients.count }}</span>
+        <span class="stat-label">Всего клиентов</span>
+    </div>
+</div>
+
+        <div class="clients-actions">
+            <div class="search-box">
+                <input type="text" id="clientSearch" placeholder="🔍 Поиск клиентов..." class="search-input">
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-small" onclick="filterClients('all')">Все</button>
+                <button class="btn btn-small" onclick="filterClients('with-comments')">С комментариями</button>
+            </div>
+        </div>
+
+        <div class="clients-list">
+            {% for client in clients %}
+            <div class="client-card" data-client-id="{{ client.pk }}">
+                <div class="client-avatar">
+                    {{ client.full_name|first|upper }}
+                </div>
+                
+                <div class="client-info">
+                    <div class="client-main">
+                        <h3 class="client-name">{{ client.full_name }}</h3>
+                        <a href="mailto:{{ client.email }}" class="client-email">{{ client.email }}</a>
+                    </div>
+                    
+                    {% if client.comment %}
+                    <div class="client-comment">
+                        <strong>Комментарий:</strong> {{ client.comment }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="client-meta">
+                        <span class="client-date">Добавлен: {{ client.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                </div>
+                
+                <div class="client-actions">
+                    <a href="{% url 'mailing:client_update' client.pk %}" class="btn btn-small" title="Редактировать">
+                        ✏️
+                    </a>
+                    <a href="#" class="btn btn-small delete-btn" 
+                    title="Удалить"
+                    data-delete-url="{% url 'mailing:client_delete' client.pk %}"
+                    data-object-name="{{ client.full_name }}">
+                        🗑️
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">👥</div>
+            <h2>Нет клиентов</h2>
+            <p>У вас пока нет добавленных клиентов. Добавьте первого клиента для создания рассылок!</p>
+            <a href="{% url 'mailing:client_create' %}" class="btn btn-accent">Добавить клиента</a>
+        </div>
+    {% endif %}
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('clientSearch');
+    const clientCards = document.querySelectorAll('.client-card');
+    
+    // Поиск клиентов
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        
+        clientCards.forEach(card => {
+            const clientName = card.querySelector('.client-name').textContent.toLowerCase();
+            const clientEmail = card.querySelector('.client-email').textContent.toLowerCase();
+            const clientComment = card.querySelector('.client-comment')?.textContent.toLowerCase() || '';
+            
+            const matches = clientName.includes(searchTerm) || 
+                          clientEmail.includes(searchTerm) || 
+                          clientComment.includes(searchTerm);
+            
+            if (matches || searchTerm === '') {
+                card.classList.remove('hidden');
+                card.classList.add('visible');
+            } else {
+                card.classList.remove('visible');
+                card.classList.add('hidden');
+            }
+        });
+    });
+});
+
+function filterClients(filterType) {
+    const clientCards = document.querySelectorAll('.client-card');
+    
+    clientCards.forEach(card => {
+        const hasComment = card.querySelector('.client-comment') !== null;
+        
+        switch(filterType) {
+            case 'all':
+                card.classList.remove('hidden');
+                card.classList.add('visible');
+                break;
+            case 'with-comments':
+                if (hasComment) {
+                    card.classList.remove('hidden');
+                    card.classList.add('visible');
+                } else {
+                    card.classList.remove('visible');
+                    card.classList.add('hidden');
+                }
+                break;
+        }
+    });
+}
+
+function addToMailing(clientId) {
+    alert('Клиент ID: ' + clientId + ' будет добавлен в рассылку');
+}
+</script>
+{% endblock %}

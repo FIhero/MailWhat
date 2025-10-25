@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Черновики уведомлений - WS{% endblock %}
+
+{% block content %}
+<div class="notifications-header">
+    <h1>Черновики уведомлений</h1>
+    <div class="header-actions">
+        <a href="{% url 'mailing:message_list' %}" class="btn btn-small">Все уведомления</a>
+        <a href="{% url 'mailing:message_create' %}" class="btn btn-accent">➕ Создать уведомление</a>
+    </div>
+</div>
+
+<div class="notifications-container">
+    {% if messages %}
+        <div class="notifications-stats">
+            <div class="stat-card">
+                <span class="stat-number">{{ messages.count }}</span>
+                <span class="stat-label">Всего черновиков</span>
+            </div>
+            <div class="stat-card stat-draft">
+                <span class="stat-number">{{ messages.count }}</span>
+                <span class="stat-label">Готовы к отправке</span>
+            </div>
+        </div>
+
+        <div class="notifications-list">
+            {% for message in messages %}
+            <div class="notification-card draft-card">
+                <div class="notification-header">
+                    <h3 class="notification-subject">{{ message.message_subject }}</h3>
+                    <div class="notification-badges">
+                        <span class="notification-badge draft-badge">Черновик</span>
+                        <span class="notification-date">{{ message.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                </div>
+                
+                <div class="notification-body">
+                    <p class="notification-text">{{ message.message_body|truncatewords:30 }}</p>
+                </div>
+                
+                <div class="notification-meta">
+                    <span class="notification-usage">
+                        Еще не использовалось в рассылках
+                    </span>
+                </div>
+                
+                <div class="notification-actions">
+                    <a href="{% url 'mailing:mailing_create' %}?message={{ message.pk }}" 
+                       class="btn btn-accent btn-small">
+                        Создать рассылку
+                    </a>
+                    <a href="{% url 'mailing:message_update' message.pk %}" class="btn btn-small">
+                        Изменить
+                    </a>
+                    <a href="#" class="btn btn-small btn-danger delete-btn"
+                        data-delete-url="{% url 'mailing:message_delete' message.pk %}"
+                        data-object-name="{{ message.message_subject }}">
+                            Удалить
+                        </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h2>Нет черновиков</h2>
+            <p>Все уведомления уже использованы в рассылках или у вас пока нет созданных уведомлений.</p>
+            <div class="empty-actions">
+                <a href="{% url 'mailing:message_create' %}" class="btn btn-accent">Создать уведомление</a>
+                <a href="{% url 'mailing:message_list' %}" class="btn">Посмотреть все уведомления</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+
+{% endblock %}

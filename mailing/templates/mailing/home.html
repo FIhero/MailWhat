@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Webinar Service{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h1>Добро пожаловать в WS!</h1>
+    <p>Платформа для управления вебинарами и email-рассылками</p>
+</div>
+
+<!-- Статистика -->
+<div class="stats-grid">
+    <div class="card">
+        <h3>Всего рассылок</h3>
+        <p class="stat-number">{{ total_mailings }}</p>
+    </div>
+    
+    <div class="card">
+        <h3>Активные рассылки</h3>
+        <p class="stat-number">{{ active_mailings }}</p>
+    </div>
+    
+    <div class="card">
+        <h3>Уникальных клиентов</h3>
+        <p class="stat-number">{{ unique_clients }}</p>
+    </div>
+</div>
+
+<!-- Быстрые действия -->
+<div class="quick-actions">
+    <h2>Быстрые действия</h2>
+    <div class="action-buttons">
+        <a href="{% url 'mailing:client_create' %}" class="btn btn-accent">Добавить клиента</a>
+        <a href="{% url 'mailing:message_create' %}" class="btn btn-accent">Создать сообщение</a>
+        <a href="{% url 'mailing:mailing_create' %}" class="btn btn-accent">Новая рассылка</a>
+    </div>
+</div>
+
+<!-- Состояние разработки -->
+<div class="development-status">
+    <h2>📊 Состояние разработки</h2>
+    
+    <div class="status-grid">
+        <!-- ЧАСТЬ 1 - ГОТОВО -->
+        <div class="status-section">
+            <h3>✅ Часть 1 - Базовая функциональность (ГОТОВО)</h3>
+            <ul class="feature-list">
+                <li>✅ Управление клиентами (CRUD)</li>
+                <li>✅ Управление сообщениями (CRUD)</li>
+                <li>✅ Управление рассылками (CRUD)</li>
+                <li>✅ Отправка рассылок через интерфейс</li>
+                <li>✅ Система логов отправки</li>
+                <li>✅ Главная страница со статистикой</li>
+                <li>✅ Красивый интерфейс с модальными окнами</li>
+            </ul>
+        </div>
+
+        <!-- ЧАСТЬ 2 - В РАЗРАБОТКЕ -->
+        <div class="status-section">
+            <h3>🔄 Часть 2 - Расширенная функциональность (В РАЗРАБОТКЕ)</h3>
+            <ul class="feature-list">
+                <li>🔲 Система пользователей и аутентификации</li>
+                <li>🔲 Права доступа и роли (менеджеры/пользователи)</li>
+                <li>🔲 Кеширование для повышения производительности</li>
+                <li>🔲 Расширенная статистика и отчеты</li>
+                <li>🔲 Восстановление пароля</li>
+            </ul>
+        </div>
+
+        <!-- ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ -->
+        <div class="status-section">
+            <h3>🔧 Дополнительные функции (В ПЛАНАХ)</h3>
+            <ul class="feature-list">
+                <li>🔲 Детальная статистика по получателям</li>
+                <li>🔲 Фильтрация и сортировка рассылок</li>
+                <li>🔲 Поиск по клиентам и сообщениям</li>
+                <li>🔲 Расширенная фильтрация логов</li>
+                <li>🔲 Система вебинаров и онлайн-трансляций</li>
+                <li>🔲 Экспорт данных в CSV/Excel</li>
+                <li>🔲 API для интеграции с внешними системами</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="current-focus">
+        <h4>🎯 Сейчас в разработке:</h4>
+        <p>Детальная статистика отправки • Фильтрация данных • Система пользователей</p>
+    </div>
+</div>
+
+{% endblock %}

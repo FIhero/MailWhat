@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if object %}Редактирование рассылки{% else %}Создание рассылки{% endif %} - WS
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>{% if object %}Редактирование рассылки{% else %}Создание рассылки{% endif %}</h1>
+        <p>{% if object %}Измените параметры рассылки{% else %}Заполните форму для создания новой рассылки{% endif %}</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post" class="mailing-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                {% for error in form.non_field_errors %}
+                    <div class="error-message">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="form-grid">
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="{{ form.start_time.id_for_label }}" class="form-label">
+                            Дата и время начала
+                        </label>
+                        <input type="datetime-local" name="start_time" 
+                               value="{{ form.start_time.value|date:'Y-m-d\TH:i' }}"
+                               class="form-input" required id="id_start_time">
+                        {% if form.start_time.errors %}
+                        <div class="field-errors">
+                            {% for error in form.start_time.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.end_time.id_for_label }}" class="form-label">
+                            Дата и время окончания
+                        </label>
+                        <input type="datetime-local" name="end_time" 
+                               value="{{ form.end_time.value|date:'Y-m-d\TH:i' }}"
+                               class="form-input" required id="id_end_time">
+                        {% if form.end_time.errors %}
+                        <div class="field-errors">
+                            {% for error in form.end_time.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">
+                            Статус рассылки
+                        </label>
+                        <select name="status" class="form-select" id="id_status">
+                            <option value="created" {% if form.status.value == 'created' %}selected{% endif %}>Создана</option>
+                            <option value="started" {% if form.status.value == 'started' %}selected{% endif %}>Запущена</option>
+                            <option value="completed" {% if form.status.value == 'completed' %}selected{% endif %}>Завершена</option>
+                        </select>
+                        {% if form.status.errors %}
+                        <div class="field-errors">
+                            {% for error in form.status.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="{{ form.message.id_for_label }}" class="form-label">
+                            Сообщение
+                        </label>
+                        <select name="message" class="form-select" id="id_message">
+    <option value="">Выберите сообщение...</option>
+    {% for message in form.message.field.queryset %}
+    <option value="{{ message.pk }}" 
+            data-body="{{ message.message_body }}">  <!-- ← ДОБАВЬ ЭТУ СТРОЧКУ -->
+        {{ message.message_subject }}
+    </option>
+    {% endfor %}
+</select>
+                        {% if form.message.errors %}
+                        <div class="field-errors">
+                            {% for error in form.message.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-help">
+                            <a href="{% url 'mailing:message_create' %}" class="btn-link">➕ Создать новое сообщение</a>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.clients.id_for_label }}" class="form-label">
+                            Получатели
+                        </label>
+                        <div class="clients-select">
+                            {% for client in form.clients.field.queryset %}
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="clients" value="{{ client.pk }}" 
+                                       {% if client.pk in form.clients.value %}checked{% endif %}>
+                                <span class="checkbox-text">{{ client.full_name }} ({{ client.email }})</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        {% if form.clients.errors %}
+                        <div class="field-errors">
+                            {% for error in form.clients.errors %}
+                                <span class="error-text">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-help">
+                            <a href="{% url 'mailing:client_create' %}" class="btn-link">➕ Добавить нового клиента</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<div class="preview-section">
+    <h3>Предпросмотр рассылки</h3>
+    <div class="preview-card">  
+        <div class="preview-row">
+            <strong>Тема:</strong>
+            <div id="preview-subject" class="preview-text">Тема сообщения появится здесь</div>
+        </div>
+        
+        <div class="preview-row">
+            <strong>Сообщение:</strong>
+            <div id="preview-body" class="preview-text message-preview">Текст сообщения появится здесь после выбора</div>
+        </div>
+        
+        <div class="preview-meta">
+            <div class="preview-row">
+                <strong>Получатели:</strong>
+                <span id="preview-recipients" class="preview-count">0</span>
+                <strong>Период:</strong>
+                <span id="preview-period" class="preview-date">не указан</span>
+            </div>
+        </div>
+    </div>  
+</div>
+
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-accent btn-large">
+                    {% if object %}Сохранить изменения{% else %}Создать рассылку{% endif %}
+                </button>
+                <a href="{% url 'mailing:client_list' %}" class="btn btn-cancel btn-large">
+                    Отмена
+                </a>
+            </div>
+
+            {% if object and object.status == 'created' %}
+            <div class="send-action" style="text-align: center;">
+                <a href="{% url 'mailing:mailing_send' object.pk %}"
+                class="btn btn-send btn-large"
+                onclick="confirmMailingSend(this.href); return false;">
+                Отправить рассылку сейчас
+                </a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageSelect = document.getElementById('id_message');
+    const clientsCheckboxes = document.querySelectorAll('input[name="clients"]');
+    const startTimeInput = document.getElementById('id_start_time');
+    const endTimeInput = document.getElementById('id_end_time');
+    
+    messageSelect.addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    console.log('Selected option:', selectedOption);
+    console.log('Data-body:', selectedOption.getAttribute('data-body'));
+    
+    if (selectedOption.text && selectedOption.value) {
+        document.getElementById('preview-subject').textContent = selectedOption.text;
+        
+        const messageBody = selectedOption.getAttribute('data-body');
+        console.log('Message body:', messageBody);
+        
+        document.getElementById('preview-body').textContent = messageBody || 'Текст не доступен';
+    } else {
+        document.getElementById('preview-subject').textContent = 'Тема сообщения появится здесь';
+        document.getElementById('preview-body').textContent = 'Текст сообщения появится здесь после выбора';
+    }
+});
+
+    clientsCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateRecipientsCount);
+    });
+    
+    startTimeInput.addEventListener('change', updatePeriod);
+    endTimeInput.addEventListener('change', updatePeriod);
+    
+    function updateRecipientsCount() {
+        const selectedCount = document.querySelectorAll('input[name="clients"]:checked').length;
+        document.getElementById('preview-recipients').textContent = selectedCount + ' получателей';
+    }
+    
+    function updatePeriod() {
+        const start = startTimeInput.value;
+        const end = endTimeInput.value;
+        if (start && end) {
+            document.getElementById('preview-period').textContent = 
+                'Период: ' + formatDateTime(start) + ' - ' + formatDateTime(end);
+        } else {
+            document.getElementById('preview-period').textContent = 'Период не указан';
+        }
+    }
+    
+    function formatDateTime(datetimeStr) {
+        if (!datetimeStr) return '';
+        const date = new Date(datetimeStr);
+        return date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    updateRecipientsCount();
+    updatePeriod();
+    
+    if (messageSelect.value) {
+        messageSelect.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+{% endblock %}

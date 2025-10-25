@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Webinar Service{% endblock %}</title>
+    
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/buttons.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/cards.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/forms.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/headers.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/stats.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/empty-states.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/modals.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/lists.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="user-info">
+        {% if user.is_authenticated %}
+            <strong>{{ user.email }}</strong> 
+            <a href="{% url 'users:profile' %}">Профиль</a>
+            <a href="{% url 'users:logout' %}">Выйти</a>
+        {% else %}
+            <a href="{% url 'users:login' %}">Войти</a>
+            <a href="{% url 'users:register' %}">Регистрация</a>
+        {% endif %}
+    </div>
+
+    {% include 'includes/navigation.html' %}
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 WS. Все права защищены. (наверное)</p>
+    </footer>
+
+    {% include 'includes/modal.html' %}
+    {% include 'includes/mailing_details_modal.html' %}
+    
+    <script src="{% static 'js/base.js' %}"></script>
+    <script src="{% static 'js/mailing-details.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+    {% include 'includes/delete_modal.html' %}
+</body>
+</html>

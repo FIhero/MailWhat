@@ -1,0 +1,237 @@
+/* ===== BUTTON SYSTEM ===== */
+.btn {
+    padding: 12px 24px;
+    min-height: 44px;
+    min-width: 120px;
+    
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    vertical-align: middle;
+    
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    background-color: var(--primary-dark);
+    color: var(--text-light);
+}
+
+/* ===== SIZES ===== */
+.btn-small {
+    padding: 8px 16px;
+    min-height: 36px;
+    min-width: 80px;
+    font-size: 13px;
+}
+
+.btn-large {
+    padding: 16px 32px;
+    min-height: 52px;
+    min-width: 160px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* ===== VARIANTS ===== */
+.btn-accent {
+    background-color: var(--accent);
+    color: var(--primary-dark);
+    border: 2px solid var(--accent);
+}
+
+.btn-accent:hover {
+    background-color: transparent;
+    color: var(--primary-dark);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background: var(--primary-dark);
+    color: white;
+    border: var(--primary-dark);
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: var(--primary-dark);
+    color: white;
+    border-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: var(--primary-dark);
+    color: white;
+    border: var(--primary-dark);
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    background-color: var(--error);
+    color: white;
+    border-color: var(--error);
+    transform: translateY(-2px);
+}
+
+.btn-cancel {
+    background-color: transparent;
+    color: var(--primary-dark);
+    border: 2px solid var(--primary-dark);
+}
+
+.btn-cancel:hover {
+    background-color: var(--primary-dark);
+    color: var(--text-light);
+    transform: translateY(-2px);
+}
+
+.btn-filter {
+    background-color: var(--primary-dark);
+    color: var(--text-light);
+    border: 2px solid var(--primary-dark);
+}
+
+.btn-filter:hover,
+.btn-filter.active {
+    background-color: var(--primary-active);
+    border-color: var(--primary-active);
+    transform: translateY(-2px);
+}
+
+.btn-send {
+    background-color: var(--primary-dark);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-send:hover {
+    background-color: #27ae60;
+    color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.btn-send::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-send:hover::before {
+    left: 100%;
+}
+
+/* ===== STATES ===== */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn:disabled:hover {
+    transform: none !important;
+}
+
+/* ===== BUTTON GROUPS ===== */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 2px solid var(--primary-dark);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.client-actions,
+.mailing-actions,
+.notification-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+    
+    .action-buttons {
+        justify-content: center;
+    }
+}
+
+/* ===== SQUARE BUTTONS FOR COMPACT ACTIONS ===== */
+.btn-square {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.btn-square-small {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+    font-size: 0.9em;
+}
+
+.btn-square-large {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    min-height: 52px;
+    padding: 0;
+    font-size: 1.1em;
+}
+
+/* Для иконок внутри квадратных кнопок */
+.btn-square .btn-icon {
+    font-size: 1.2em;
+    line-height: 1;
+}
+
+.btn-square-small .btn-icon {
+    font-size: 1em;
+}
+
+.btn-square-large .btn-icon {
+    font-size: 1.4em;
+}
