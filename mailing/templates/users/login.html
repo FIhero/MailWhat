@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Вход - WS{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>С возвращением! (=^･ω･^=)ﾉ”</h1>
+        <p>Войдите в свой аккаунт для управления рассылками</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            
+            {% if messages %}
+            <div class="form-{% if message.tags == 'error' %}errors{% else %}help{% endif %}">
+                {% for message in messages %}
+                <div>{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if form.errors %}
+            <div class="form-errors">
+                <div>Неверный email или пароль. Пожалуйста, попробуйте снова.</div>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="id_username" class="form-label">Email адрес</label>
+                <input type="email" name="username" id="id_username" class="form-input" 
+                       placeholder="your@email.com" required value="{{ form.username.value|default:'' }}">
+                {% if form.username.errors %}
+                    <div class="field-errors">
+                        {% for error in form.username.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_password" class="form-label">Пароль</label>
+                <input type="password" name="password" id="id_password" class="form-input" 
+                       placeholder="Введите ваш пароль" required>
+                {% if form.password.errors %}
+                    <div class="field-errors">
+                        {% for error in form.password.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="login-options">
+                <div class="remember-me">
+                    <input type="checkbox" name="remember_me" id="id_remember_me" class="remember-checkbox">
+                    <label for="id_remember_me" class="remember-label">Запомнить меня</label>
+                </div>
+                <a href="{% url 'users:password_reset' %}" class="register-link">
+                Забыли пароль?
+            </a>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-accent btn-large">Войти в аккаунт</button>
+            </div>
+
+            <div class="login-footer">
+                <p>Еще нет аккаунта? 
+                    <a href="{% url 'users:register' %}" class="register-link">Зарегистрироваться</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.querySelector('.login-form');
+    const usernameInput = document.getElementById('id_username'); 
+    const passwordInput = document.getElementById('id_password');
+
+    loginForm.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        if (!usernameInput.value.trim()) {
+            isValid = false;
+            usernameInput.style.borderColor = '#e74c3c';
+        }
+        
+        if (!passwordInput.value.trim()) {
+            isValid = false;
+            passwordInput.style.borderColor = '#e74c3c';
+        }
+        
+        if (!isValid) e.preventDefault();
+    });
+
+    [usernameInput, passwordInput].forEach(input => {
+        input.addEventListener('input', function() {
+            this.style.borderColor = '';
+        });
+    });
+});
+</script>
+{% endblock %}

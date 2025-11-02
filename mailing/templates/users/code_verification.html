@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Введите код - WS{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>Введите код подтверждения</h1>
+        <p>Мы отправили 6-значный код на {{ email }}</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post" class="code-form">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="form-errors">
+                <div class="error-message">
+                    Неверный код или время действия истекло
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-group" style="text-align: center;">
+                <label for="code" class="form-label">Код из письма</label>
+                <input type="text" name="code" id="code" class="form-input"
+                       placeholder="123456" maxlength="6" required
+                       style="text-align: center; font-size: 1.5em; letter-spacing: 10px;"
+                       autocomplete="off">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-accent btn-large">
+                    Подтвердить
+                </button>
+                <a href="{% url 'users:password_reset' %}" class="btn btn-cancel btn-large">
+                    Отмена
+                </a>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <p><small>Не получили код? <a href="#" class="register-link" style="color: var(--primary-dark)">
+                    Отправить повторно
+                </a></small></p>
+                <a style="color:rgba(0, 0, 0, 0.1)"> (Он ниче не делает) </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

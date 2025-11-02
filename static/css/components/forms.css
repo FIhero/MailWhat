@@ -147,11 +147,6 @@
     margin-bottom: 20px;
 }
 
-.error-message {
-    color: #c0392b;
-    font-weight: 500;
-}
-
 .field-errors {
     margin-top: 5px;
 }

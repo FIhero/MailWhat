@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Редактирование профиля - WS{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>Редактор</h1>
+        <p>Измените ваши личные данные</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post" class="profile-form">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="id_first_name" class="form-label">Имя *</label>
+                        <input type="text" name="first_name" id="id_first_name" class="form-input" 
+                               value="{{ user.first_name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_email" class="form-label">Email *</label>
+                        <input type="email" class="form-input" value="{{ user.email }}" readonly
+                               style="background: rgba(255,255,255,0.1);">
+                        <div class="form-help">Для смены email обратитесь в поддержку</div>
+                    </div>
+                </div>
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="id_last_name" class="form-label">Фамилия *</label>
+                        <input type="text" name="last_name" id="id_last_name" class="form-input" 
+                               value="{{ user.last_name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_phone" class="form-label">Телефон</label>
+                        <input type="tel" name="phone" id="id_phone" class="form-input" 
+                               value="{{ user.phone|default:'' }}" 
+                               placeholder="+7 (999) 123-45-67">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-accent">Сохранить зменения</button>
+                <a href="{% url 'users:profile' %}" class="btn btn-cancel">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

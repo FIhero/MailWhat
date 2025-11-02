@@ -9,25 +9,11 @@
         {% if filtered_mailing %}
         <a href="{% url 'mailing:attempt_list' %}" class="btn btn-small">Все логи</a>
         {% endif %}
-        <button class="btn btn-small" onclick="exportLogs()">Экспорт</button>
+        <button class="btn btn-small btn-accent" onclick="exportLogs()">Экспорт</button>
     </div>
 </div>
 
 <div class="attempts-container">
-    <div class="attempts-stats">
-        <div class="stat-card">
-            <span class="stat-number">{{ total_attempts|default:0 }}</span>
-            <span class="stat-label">Всего попыток</span>
-        </div>
-        <div class="stat-card stat-success">
-            <span class="stat-number">{{ successful_attempts|default:0 }}</span>
-            <span class="stat-label">Успешных</span>
-        </div>
-        <div class="stat-card stat-failure">
-            <span class="stat-number">{{ failed_attempts|default:0 }}</span>
-            <span class="stat-label">Неудачных</span>
-        </div>
-    </div>
     {% if filtered_mailing %}
     <div class="filter-info">
         <div class="filter-card">
@@ -57,16 +43,41 @@
     </div>
     {% endif %}
 
-    <div class="attempts-actions">
-        <div class="search-box">
-            <input type="text" id="attemptSearch" placeholder="🔍 Поиск по логам(тема, email, ответ сервера)..." class="search-input">
-        </div>
-<div class="filter-actions">
-    <button class="btn btn-small btn-filter active" onclick="filterAttempts('all')">Все</button>
-    <button class="btn btn-small btn-filter btn-success" onclick="filterAttempts('success')">Успешные</button>
-    <button class="btn btn-small btn-filter btn-danger" onclick="filterAttempts('failure')">Ошибки</button>
-</div>
+<div class="search-filter-container">
+    <div class="search-container">
+        <form method="get" class="search-form">
+            <input type="text" 
+                   name="q" 
+                   placeholder="Поиск по логам(тема, email, ответ сервера)..." 
+                   value="{{ query|default:'' }}"
+                   class="search-input">
+            {% if query %}
+            <a href="?" class="search-clear">×</a>
+            {% endif %}
+        </form>
     </div>
+    
+    <div class="filter-tabs">
+        <a class="filter-tab active" onclick="filterAttempts('all')">
+            <span class="btn btn-small btn-filter">
+                Все
+                <span class="filter-count">{{ total_attempts|default:0 }}</span>
+            </span>
+        </a>
+        <a class="filter-tab" onclick="filterAttempts('success')">
+            <span class="btn btn-small btn-send">
+                Успешные
+                <span class="filter-count">{{ successful_attempts|default:0 }}</span>
+            </span>
+        </a>
+        <a class="filter-tab" onclick="filterAttempts('failure')">
+            <span class="btn btn-small btn-danger">
+                Ошибки
+                <span class="filter-count">{{ failed_attempts|default:0 }}</span>
+            </span>
+        </a>
+    </div>
+</div>
 
     <div class="attempts-list">
         {% if attempts %}
@@ -153,20 +164,19 @@
                     </div>
                     {% endif %}
                 </div>
-
-                <div class="attempt-actions">
-                    <button class="btn btn-small" onclick="retryAttempt('{{ attempt.pk }}')" 
-                            {% if attempt.status == 'success' %}disabled{% endif %}>
-                        Повторить
-                    </button>
-                    <button class="btn btn-small" onclick="showMailingDetails('{{ attempt.pk }}')">
-                        Подробнее
-                    </button>
-                    <a href="{% url 'mailing:attempt_list' %}?mailing={{ attempt.mailing_list.pk }}" 
-                       class="btn btn-small">
-                        Все логи этой рассылки
-                    </a>
-                </div>
+            <div class="attempt-actions">
+                <button class="btn btn-small" onclick="retryAttempt('{{ attempt.pk }}')" 
+                        {% if attempt.status == 'success' %}disabled{% endif %}>
+                    Повторить
+                </button>
+                <button class="btn btn-small" onclick="showMailingDetails('{{ attempt.pk }}')">
+                    Подробнее
+                </button>
+                <a href="{% url 'mailing:attempt_list' %}?mailing={{ attempt.mailing_list.pk }}" 
+                class="btn btn-small" 
+                onclick="event.stopPropagation()">
+                    Все логи этой рассылки
+                </a>
             </div>
             {% endfor %}
         {% else %}
@@ -192,13 +202,12 @@
     </div>
 </div>
 
-
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('attemptSearch');
+    const searchInput = document.querySelector('.search-input');
     const attemptCards = document.querySelectorAll('.attempt-card');
-    
+    const filterTabs = document.querySelectorAll('.filter-tab');
+
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase().trim();
         
@@ -208,11 +217,16 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (matches) {
                 card.classList.remove('hidden');
-                card.classList.add('visible');
             } else {
-                card.classList.remove('visible');
                 card.classList.add('hidden');
             }
+        });
+    });
+
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            filterTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
         });
     });
 });
@@ -227,23 +241,18 @@ function filterAttempts(filterType) {
         switch(filterType) {
             case 'all':
                 card.classList.remove('hidden');
-                card.classList.add('visible');
                 break;
             case 'success':
                 if (isSuccess) {
                     card.classList.remove('hidden');
-                    card.classList.add('visible');
                 } else {
-                    card.classList.remove('visible');
                     card.classList.add('hidden');
                 }
                 break;
             case 'failure':
                 if (isFailure) {
                     card.classList.remove('hidden');
-                    card.classList.add('visible');
                 } else {
-                    card.classList.remove('visible');
                     card.classList.add('hidden');
                 }
                 break;
@@ -252,22 +261,17 @@ function filterAttempts(filterType) {
 }
 
 function retryAttempt(attemptId) {
-    showModal(
-        'Повторная отправка',
-        'Вы уверены, что хотите повторить отправку для этой попытки?',
-        function() {
-            alert('Повторная отправка запущена для попытки ID: ' + attemptId);
-            closeModal(); 
-        }
-    );
+    if (confirm('Вы уверены, что хотите повторить отправку для этой попытки?')) {
+        alert('Повторная отправка запущена для попытки ID: ' + attemptId);
+    }
 }
 
-function showDetails(attemptId) {
+function showMailingDetails(attemptId) {
     alert('Детальная информация для попытки ID: ' + attemptId);
 }
 
 function exportLogs() {
-    alert('Экспорт логов в процессе разработки');
+    document.getElementById('export-modal').style.display = 'block';
 }
 </script>
 {% endblock %}

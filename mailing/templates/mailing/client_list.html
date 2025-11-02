@@ -5,28 +5,52 @@
 {% block content %}
 <div class="clients-header">
     <h1>Клиенты</h1>
+    {% if user.role != 'manager' %}
     <a href="{% url 'mailing:client_create' %}" class="btn btn-accent">➕ Добавить клиента</a>
+    {% endif %}
 </div>
 
 <div class="clients-container">
-    {% if clients %}
-<div class="clients-stats">
-    <div class="stat-card">
-        <span class="stat-number">{{ clients.count }}</span>
-        <span class="stat-label">Всего клиентов</span>
-    </div>
-</div>
-
-        <div class="clients-actions">
-            <div class="search-box">
-                <input type="text" id="clientSearch" placeholder="🔍 Поиск клиентов..." class="search-input">
-            </div>
-            <div class="filter-actions">
-                <button class="btn btn-small" onclick="filterClients('all')">Все</button>
-                <button class="btn btn-small" onclick="filterClients('with-comments')">С комментариями</button>
-            </div>
+    <div class="clients-actions">
+        <div class="search-box">
+            <form method="get" class="search-form" style="position: relative;">
+                <input type="hidden" name="filter" value="{{ current_filter }}">
+                <input type="text" 
+                       name="q" 
+                       id="clientSearch"
+                       placeholder="Поиск по имени, email или комментарию..." 
+                       value="{{ query|default:'' }}"
+                       class="search-input">
+                {% if query %}
+                <a href="?filter={{ current_filter }}" 
+                   style="position: absolute; right: 8px; text-decoration: none; font-size: 20px; color: #999; line-height: 1;">×</a>
+                {% endif %}
+            </form>
         </div>
+        
+        <div class="filter-actions">
+            <a href="?filter=all{% if query %}&q={{ query }}{% endif %}" class="btn btn-small btn-filter {% if current_filter == 'all' or not current_filter %}active{% endif %}">
+                Все клиенты 
+                <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 10px; font-size: 12px; margin-left: 5px;">
+                    {{ all_count|default:0 }}
+                </span>
+            </a>
+            <a href="?filter=with_comments{% if query %}&q={{ query }}{% endif %}" class="btn btn-small btn-filter {% if current_filter == 'with_comments' %}active{% endif %}">
+                С комментариями 
+                <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 10px; font-size: 12px; margin-left: 5px;">
+                    {{ with_comments_count|default:0 }}
+                </span>
+            </a>
+            <a href="?filter=without_comments{% if query %}&q={{ query }}{% endif %}" class="btn btn-small btn-filter {% if current_filter == 'without_comments' %}active{% endif %}">
+                Без комментариев 
+                <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 10px; font-size: 12px; margin-left: 5px;">
+                    {{ without_comments_count|default:0 }}
+                </span>
+            </a>
+        </div>
+    </div>
 
+    {% if clients %}
         <div class="clients-list">
             {% for client in clients %}
             <div class="client-card" data-client-id="{{ client.pk }}">
@@ -50,28 +74,39 @@
                         <span class="client-date">Добавлен: {{ client.created_at|date:"d.m.Y" }}</span>
                     </div>
                 </div>
+                {% if user.role != 'manager' %}
                 
                 <div class="client-actions">
-                    <a href="{% url 'mailing:client_update' client.pk %}" class="btn btn-small" title="Редактировать">
+                    <a href="{% url 'mailing:client_update' client.pk %}" class="btn btn-square btn-small btn-filter" title="Редактировать">
                         ✏️
                     </a>
-                    <a href="#" class="btn btn-small delete-btn" 
+                    <a href="#" class="btn btn-square btn-small btn-danger delete-btn" 
                     title="Удалить"
                     data-delete-url="{% url 'mailing:client_delete' client.pk %}"
                     data-object-name="{{ client.full_name }}">
                         🗑️
                     </a>
                 </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
     {% else %}
+        {% if query %}
+        <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <h2>Ничего не найдено</h2>
+            <p>Клиенты по запросу "{{ query }}" не найдены.</p>
+            <a href="?filter={{ current_filter }}" class="btn btn-accent">Показать всех клиентов</a>
+        </div>
+        {% else %}
         <div class="empty-state">
             <div class="empty-icon">👥</div>
             <h2>Нет клиентов</h2>
             <p>У вас пока нет добавленных клиентов. Добавьте первого клиента для создания рассылок!</p>
             <a href="{% url 'mailing:client_create' %}" class="btn btn-accent">Добавить клиента</a>
         </div>
+        {% endif %}
     {% endif %}
 </div>
 

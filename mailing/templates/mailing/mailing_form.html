@@ -18,7 +18,7 @@
             {% if form.non_field_errors %}
             <div class="form-errors">
                 {% for error in form.non_field_errors %}
-                    <div class="error-message">{{ error }}</div>
+                    <div class="error-text">{{ error }}</div>
                 {% endfor %}
             </div>
             {% endif %}
@@ -82,14 +82,15 @@
                             Сообщение
                         </label>
                         <select name="message" class="form-select" id="id_message">
-    <option value="">Выберите сообщение...</option>
-    {% for message in form.message.field.queryset %}
-    <option value="{{ message.pk }}" 
-            data-body="{{ message.message_body }}">  <!-- ← ДОБАВЬ ЭТУ СТРОЧКУ -->
-        {{ message.message_subject }}
-    </option>
-    {% endfor %}
-</select>
+                            <option value="">Выберите сообщение...</option>
+                            {% for message in form.message.field.queryset %}
+                            <option value="{{ message.pk }}" 
+                                    data-body="{{ message.message_body }}"
+                                    {% if form.message.value == message.pk %}selected{% endif %}>
+                                {{ message.message_subject }}
+                            </option>
+                            {% endfor %}
+                        </select>
                         {% if form.message.errors %}
                         <div class="field-errors">
                             {% for error in form.message.errors %}
@@ -106,12 +107,18 @@
                         <label for="{{ form.clients.id_for_label }}" class="form-label">
                             Получатели
                         </label>
-                        <div class="clients-select">
+                        <div class="search-box">
+                            <input type="text" id="clientSearch" placeholder="Поиск клиентов..." class="search-input">
+                        </div>
+                        <div class="clients-select" id="clientsContainer">
                             {% for client in form.clients.field.queryset %}
-                            <label class="checkbox-label">
+                            <label class="checkbox-label client-item" data-email="{{ client.email }}">
                                 <input type="checkbox" name="clients" value="{{ client.pk }}" 
                                        {% if client.pk in form.clients.value %}checked{% endif %}>
-                                <span class="checkbox-text">{{ client.full_name }} ({{ client.email }})</span>
+                                <span class="checkbox-text">
+                                    {{ client.full_name }} 
+                                    <span class="client-email-preview">({{ client.email }})</span>
+                                </span>
                             </label>
                             {% endfor %}
                         </div>
@@ -129,36 +136,43 @@
                 </div>
             </div>
 
-<div class="preview-section">
-    <h3>Предпросмотр рассылки</h3>
-    <div class="preview-card">  
-        <div class="preview-row">
-            <strong>Тема:</strong>
-            <div id="preview-subject" class="preview-text">Тема сообщения появится здесь</div>
-        </div>
-        
-        <div class="preview-row">
-            <strong>Сообщение:</strong>
-            <div id="preview-body" class="preview-text message-preview">Текст сообщения появится здесь после выбора</div>
-        </div>
-        
-        <div class="preview-meta">
-            <div class="preview-row">
-                <strong>Получатели:</strong>
-                <span id="preview-recipients" class="preview-count">0</span>
-                <strong>Период:</strong>
-                <span id="preview-period" class="preview-date">не указан</span>
+            <div class="preview-section">
+                <h3>Предпросмотр рассылки</h3>
+                <div class="preview-card">  
+                    <div class="preview-row">
+                        <strong>Тема:</strong>
+                        <div id="preview-subject" class="preview-text">Тема сообщения появится здесь</div>
+                    </div>
+                    
+                    <div class="preview-row">
+                        <strong>Сообщение:</strong>
+                        <div id="preview-body" class="preview-text message-preview">Текст сообщения появится здесь после выбора</div>
+                    </div>
+                    
+                    <div class="preview-meta">
+                        <div class="preview-row">
+                            <strong>Получатели:</strong>
+                            <span id="preview-recipients-count" class="preview-count">0</span>
+                        </div>
+                        <div class="preview-row">
+                            <strong>Период:</strong>
+                            <span id="preview-period" class="preview-date">не указан</span>
+                        </div>
+                    </div>
+                    
+                    <div class="selected-recipients" id="selectedRecipients">
+                        <strong>Выбранные получатели:</strong>
+                        <div id="recipients-list" class="recipients-list">
+                        </div>
+                    </div>
+                </div>  
             </div>
-        </div>
-    </div>  
-</div>
-
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-accent btn-large">
                     {% if object %}Сохранить изменения{% else %}Создать рассылку{% endif %}
                 </button>
-                <a href="{% url 'mailing:client_list' %}" class="btn btn-cancel btn-large">
+                <a href="{% url 'mailing:mailing_list' %}" class="btn btn-cancel btn-large">
                     Отмена
                 </a>
             </div>
@@ -176,6 +190,94 @@
     </div>
 </div>
 
+<style>
+.search-box {
+    margin-bottom: 15px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.client-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+}
+
+.client-item:hover {
+    background-color: #f5f5f5;
+}
+
+.client-item.hidden {
+    display: none;
+}
+
+.client-email-preview {
+    color: #666;
+    font-size: 12px;
+}
+
+.selected-recipients {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.recipients-list {
+    margin-top: 10px;
+}
+
+.recipient-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    border: 1px solid #e9ecef;
+}
+
+.recipient-info {
+    flex-grow: 1;
+}
+
+.recipient-name {
+    font-weight: 500;
+}
+
+.recipient-email {
+    font-size: 12px;
+    color: #666;
+}
+
+.remove-recipient {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.remove-recipient:hover {
+    background: #c82333;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -183,45 +285,108 @@ document.addEventListener('DOMContentLoaded', function() {
     const clientsCheckboxes = document.querySelectorAll('input[name="clients"]');
     const startTimeInput = document.getElementById('id_start_time');
     const endTimeInput = document.getElementById('id_end_time');
+    const clientSearch = document.getElementById('clientSearch');
+    const clientsContainer = document.getElementById('clientsContainer');
     
+    // Поиск клиентов
+    if (clientSearch) {
+        clientSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const clientItems = clientsContainer.querySelectorAll('.client-item');
+            
+            clientItems.forEach(item => {
+                const clientText = item.textContent.toLowerCase();
+                const clientEmail = item.getAttribute('data-email').toLowerCase();
+                
+                if (clientText.includes(searchTerm) || clientEmail.includes(searchTerm) || searchTerm === '') {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        });
+    }
+    
+    // Обновление предпросмотра сообщения
     messageSelect.addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    console.log('Selected option:', selectedOption);
-    console.log('Data-body:', selectedOption.getAttribute('data-body'));
-    
-    if (selectedOption.text && selectedOption.value) {
-        document.getElementById('preview-subject').textContent = selectedOption.text;
+        const selectedOption = this.options[this.selectedIndex];
         
-        const messageBody = selectedOption.getAttribute('data-body');
-        console.log('Message body:', messageBody);
-        
-        document.getElementById('preview-body').textContent = messageBody || 'Текст не доступен';
-    } else {
-        document.getElementById('preview-subject').textContent = 'Тема сообщения появится здесь';
-        document.getElementById('preview-body').textContent = 'Текст сообщения появится здесь после выбора';
-    }
-});
-
-    clientsCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateRecipientsCount);
+        if (selectedOption.text && selectedOption.value) {
+            document.getElementById('preview-subject').textContent = selectedOption.text;
+            
+            const messageBody = selectedOption.getAttribute('data-body');
+            document.getElementById('preview-body').textContent = messageBody || 'Текст не доступен';
+        } else {
+            document.getElementById('preview-subject').textContent = 'Тема сообщения появится здесь';
+            document.getElementById('preview-body').textContent = 'Текст сообщения появится здесь после выбора';
+        }
     });
-    
-    startTimeInput.addEventListener('change', updatePeriod);
-    endTimeInput.addEventListener('change', updatePeriod);
-    
-    function updateRecipientsCount() {
-        const selectedCount = document.querySelectorAll('input[name="clients"]:checked').length;
-        document.getElementById('preview-recipients').textContent = selectedCount + ' получателей';
+
+    // Обновление списка выбранных получателей
+    function updateRecipientsList() {
+        const selectedClients = [];
+        const recipientsList = document.getElementById('recipients-list');
+        
+        clientsCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const clientItem = checkbox.closest('.client-item');
+                const clientName = clientItem.querySelector('.checkbox-text').textContent.split('(')[0].trim();
+                const clientEmail = clientItem.getAttribute('data-email');
+                
+                selectedClients.push({
+                    id: checkbox.value,
+                    name: clientName,
+                    email: clientEmail
+                });
+            }
+        });
+        
+        // Обновляем счетчик
+        document.getElementById('preview-recipients-count').textContent = selectedClients.length + ' получателей';
+        
+        // Обновляем список
+        recipientsList.innerHTML = '';
+        
+        if (selectedClients.length === 0) {
+            recipientsList.innerHTML = '<div style="color: #999; font-style: italic;">Нет выбранных получателей</div>';
+            return;
+        }
+        
+        selectedClients.forEach(client => {
+            const recipientItem = document.createElement('div');
+            recipientItem.className = 'recipient-item';
+            recipientItem.innerHTML = `
+                <div class="recipient-info">
+                    <div class="recipient-name">${client.name}</div>
+                    <div class="recipient-email">${client.email}</div>
+                </div>
+                <button type="button" class="remove-recipient" data-client-id="${client.id}">×</button>
+            `;
+            recipientsList.appendChild(recipientItem);
+        });
+        
+        // Добавляем обработчики для кнопок удаления
+        document.querySelectorAll('.remove-recipient').forEach(button => {
+            button.addEventListener('click', function() {
+                const clientId = this.getAttribute('data-client-id');
+                const checkbox = document.querySelector(`input[name="clients"][value="${clientId}"]`);
+                if (checkbox) {
+                    checkbox.checked = false;
+                    updateRecipientsList();
+                }
+            });
+        });
     }
     
+    // Обновление периода
     function updatePeriod() {
         const start = startTimeInput.value;
         const end = endTimeInput.value;
         if (start && end) {
             document.getElementById('preview-period').textContent = 
-                'Период: ' + formatDateTime(start) + ' - ' + formatDateTime(end);
+                formatDateTime(start) + ' - ' + formatDateTime(end);
         } else {
-            document.getElementById('preview-period').textContent = 'Период не указан';
+            document.getElementById('preview-period').textContent = 'не указан';
         }
     }
     
@@ -234,7 +399,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    updateRecipientsCount();
+    // Инициализация
+    clientsCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateRecipientsList);
+    });
+    
+    startTimeInput.addEventListener('change', updatePeriod);
+    endTimeInput.addEventListener('change', updatePeriod);
+    
+    updateRecipientsList();
     updatePeriod();
     
     if (messageSelect.value) {

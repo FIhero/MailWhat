@@ -1,0 +1,73 @@
+<div id="export-modal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>Экспорт логов</h3>
+            <span class="modal-close" onclick="closeExportModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 4em; margin-bottom: 20px;">🔧</div>
+                <h3 style="color: var(--primary-dark); margin-bottom: 15px;">Экспорт в разработке</h3>
+                <p style="color: var(--primary-active); line-height: 1.6; margin-bottom: 25px;">
+                    Функция экспорта логов рассылок находится в активной разработке.<br>
+                    Скоро вы сможете выгружать данные в различных форматах для анализа.
+                </p>
+                
+                <div style="background: var(--bg-secondary); padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="margin-bottom: 15px; color: var(--primary-dark);">Планируемые форматы экспорта:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">📋</span>
+                            <div>
+                                <strong>CSV</strong>
+                                <div style="font-size: 0.9em; color: var(--primary-active);">Для Excel и Google Sheets</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">📈</span>
+                            <div>
+                                <strong>XLSX</strong>
+                                <div style="font-size: 0.9em; color: var(--primary-active);">Форматированные таблицы</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">📄</span>
+                            <div>
+                                <strong>PDF</strong>
+                                <div style="font-size: 0.9em; color: var(--primary-active);">Для отчетов и презентаций</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">📊</span>
+                            <div>
+                                <strong>JSON</strong>
+                                <div style="font-size: 0.9em; color: var(--primary-active);">Для разработчиков и API</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeExportModal()" class="btn btn-accent">Понятно</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const exportModal = document.getElementById('export-modal'); 
+
+function showExportModal() { 
+    exportModal.style.display = 'block';
+}
+
+function closeExportModal() { 
+    exportModal.style.display = 'none';
+}
+
+window.addEventListener('click', function(event) {
+    if (event.target === exportModal) { 
+        closeExportModal();
+    }
+});
+</script>

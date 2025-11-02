@@ -1,8 +1,9 @@
 import json
 
 from django.contrib import messages
+from django.db.models import Q
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, DeleteView, UpdateView, TemplateView
 
@@ -17,19 +18,90 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['total_mailings'] = Mailing.objects.count()
-        context['active_mailings'] = Mailing.objects.filter(status='started').count()
-        context['unique_clients'] = Client.objects.count()
+        user = self.request.user
+
+        # Для неавторизованных пользователей
+        if not user.is_authenticated:
+            return context
+
+        # Для менеджеров - общая статистика
+        if user.role == 'manager':
+            context['total_mailings'] = Mailing.objects.count()
+            context['active_mailings'] = Mailing.objects.filter(status='started').count()
+            context['unique_clients'] = Client.objects.count()
+
+        # Для обычных пользователей - личная статистика
+        elif user.role == 'user':
+            context['total_mailings'] = Mailing.objects.filter(owner=user).count()
+            context['active_mailings'] = Mailing.objects.filter(owner=user, status='started').count()
+            context['total_messages'] = Message.objects.filter(owner=user).count()
+
+        # Для лекторов - статистика по вебинарам (пока раздумывается)
+        elif user.role == 'lector':
+            context['webinar_stats'] = {
+                'total_webinars': 0,
+                'unique_participants': 0,
+                'upcoming_webinars': 0
+            }
+
         return context
+
 
 class ClientListView(ListView):
     """Контролер страницы списка клиентов"""
     model = Client
     template_name = 'mailing/client_list.html'
     context_object_name = 'clients'
+    # paginate_by = 18
+    ordering = ['-created_at']
 
     def get_queryset(self):
-        return Client.objects.all()
+        if not self.request.user.is_authenticated:
+            return Client.objects.none()
+
+        queryset = Client.objects.all()
+
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(full_name__icontains=query) |
+                Q(email__icontains=query) |
+                Q(comment__icontains=query)
+            )
+
+        filter_type = self.request.GET.get('filter', 'all')
+        if filter_type == 'with_comments':
+            queryset = queryset.exclude(comment__exact='').exclude(comment__isnull=True)
+        elif filter_type == 'without_comments':
+            queryset = queryset.filter(Q(comment__exact='') | Q(comment__isnull=True))
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        clients = Client.objects.all()
+
+        query = self.request.GET.get('q')
+        if query:
+            clients = clients.filter(
+                Q(full_name__icontains=query) |
+                Q(email__icontains=query) |
+                Q(comment__icontains=query)
+            )
+
+        current_filter = self.request.GET.get('filter', 'all')
+
+        context.update({
+            'current_filter': current_filter,
+            'query': query,
+            'all_count': clients.count(),
+            'with_comments_count': clients.exclude(comment__exact='').exclude(comment__isnull=True).count(),
+            'without_comments_count': clients.filter(Q(comment__exact='') | Q(comment__isnull=True)).count(),
+        })
+
+        return context
+
 
 class ClientCreateView(CreateView):
     """Контроллер создания клиента"""
@@ -43,6 +115,11 @@ class ClientCreateView(CreateView):
         if 'email' in form.errors:
             messages.error(self.request, 'Клиент с таким email уже существует!')
         return super().form_invalid(form)
+
+    def form_valid(self, form):
+        """Устанавливает владельца"""
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 class ClientUpdateView(UpdateView):
     """Контроллер обновления клиента"""
@@ -79,22 +156,60 @@ class MessageListView(ListView):
     """Контролер страницы списка сообщений"""
     model = Message
     template_name = 'mailing/message_list.html'
-    context_object_name = 'notifications'
-    ordering = ['-created_at']
-
-    def get_queryset(self):
-        return Message.objects.all()
-
-
-class UnsentMessagesListView(ListView):
-    """Неотправленные уведомления (для создания рассылок)"""
-    model = Message
-    template_name = 'mailing/unsent_messages.html'
     context_object_name = 'messages'
     ordering = ['-created_at']
+    # paginate_by = 10
 
     def get_queryset(self):
-        return Message.objects.filter(mailing__isnull=True)
+
+        if self.request.user.role == 'manager':
+            queryset = Message.objects.all()
+        elif self.request.user.role == 'user':
+            queryset = Message.objects.filter(owner=self.request.user)
+        else:
+            queryset = Message.objects.none()
+
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(message_subject__icontains=query) |
+                Q(message_body__icontains=query)
+            )
+
+        filter_type = self.request.GET.get('filter', 'all')
+        if filter_type == 'draft':
+            queryset = queryset.filter(mailing__isnull=True)
+        elif filter_type == 'used':
+            queryset = queryset.filter(mailing__isnull=False)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.role == 'manager':
+            base_queryset = Message.objects.all()
+        elif self.request.user.role == 'user':
+            base_queryset = Message.objects.filter(owner=self.request.user)
+        else:
+            base_queryset = Message.objects.none()
+
+        query = self.request.GET.get('q')
+        if query:
+            base_queryset = base_queryset.filter(
+                Q(message_subject__icontains=query) |
+                Q(message_body__icontains=query)
+            )
+
+        context.update({
+            'current_filter': self.request.GET.get('filter', 'all'),
+            'query': query,
+            'all_count': base_queryset.count(),
+            'draft_count': base_queryset.filter(mailing__isnull=True).count(),
+            'used_count': base_queryset.filter(mailing__isnull=False).count(),
+        })
+
+        return context
 
 class MessageCreateView(CreateView):
     """Контролер страницы написания сообщения"""
@@ -102,6 +217,18 @@ class MessageCreateView(CreateView):
     form_class = MessageForm
     template_name = 'mailing/message_form.html'
     success_url = reverse_lazy('mailing:message_list')
+
+    def form_valid(self, form):
+        """Устанавливает владельца"""
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
+    def get_queryset(self):
+        if self.request.user.role == 'manager':
+            return Message.objects.all()
+        elif self.request.user.role == 'user':
+            return Message.objects.filter(owner=self.request.user)
+        return Message.objects.none()
 
 class MessageUpdateView(UpdateView):
     """Контролер страницы обновления сообщения"""
@@ -121,9 +248,58 @@ class MailingListView(ListView):
     model = Mailing
     template_name = 'mailing/mailing_list.html'
     context_object_name = 'mailings'
+    # paginate_by = 10
 
     def get_queryset(self):
-        return Mailing.objects.all()
+        queryset = super().get_queryset()
+
+        # Фильтрация по пользователю
+        if self.request.user.role == 'manager':
+            queryset = Mailing.objects.all()
+        elif self.request.user.role == 'user':
+            queryset = Mailing.objects.filter(owner=self.request.user)
+        else:
+            queryset = Mailing.objects.none()
+
+        # Поиск по теме сообщения
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(message__message_subject__icontains=query) |
+                Q(message__message_body__icontains=query)
+            )
+
+        # Фильтрация по статусу
+        filter_type = self.request.GET.get('filter', 'all')
+        if filter_type == 'created':
+            queryset = queryset.filter(status='created')
+        elif filter_type == 'started':
+            queryset = queryset.filter(status='started')
+        elif filter_type == 'completed':
+            queryset = queryset.filter(status='completed')
+
+        return queryset.order_by('-start_time')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.role == 'manager':
+            base_queryset = Mailing.objects.all()
+        elif self.request.user.role == 'user':
+            base_queryset = Mailing.objects.filter(owner=self.request.user)
+        else:
+            base_queryset = Mailing.objects.none()
+
+        context.update({
+            'current_filter': self.request.GET.get('filter', 'all'),
+            'query': self.request.GET.get('q', ''),
+            'all_count': base_queryset.count(),
+            'created_count': base_queryset.filter(status='created').count(),
+            'started_count': base_queryset.filter(status='started').count(),
+            'completed_count': base_queryset.filter(status='completed').count(),
+        })
+
+        return context
+
 
 class MailingCreateView(CreateView):
     """Контролер страницы написания рассылки"""
@@ -132,7 +308,50 @@ class MailingCreateView(CreateView):
     template_name = 'mailing/mailing_form.html'
     success_url = reverse_lazy('mailing:mailing_list')
 
+    def get_initial(self):
+        """Устанавливаем начальные значения формы"""
+        initial = super().get_initial()
 
+        message_id = self.kwargs.get('message_id') or self.request.GET.get('message')
+
+        if message_id:
+            try:
+                message = Message.objects.get(id=message_id)
+                initial['message'] = message
+            except Message.DoesNotExist:
+                pass
+
+        return initial
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+
+        if self.request.user.role == 'user':
+            form.fields['message'].queryset = Message.objects.filter(owner=self.request.user)
+
+        message_id = self.kwargs.get('message_id') or self.request.GET.get('message')
+        if message_id and Message.objects.filter(id=message_id).exists():
+            form.fields['message'].initial = message_id
+
+        return form
+
+    def get_context_data(self, **kwargs):
+        """Добавляем информацию о предвыбранном сообщении в контекст"""
+        context = super().get_context_data(**kwargs)
+
+        message_id = self.kwargs.get('message_id') or self.request.GET.get('message')
+        if message_id:
+            try:
+                context['preselected_message'] = Message.objects.get(id=message_id)
+            except Message.DoesNotExist:
+                context['preselected_message'] = None
+
+        return context
+
+    def form_valid(self, form):
+        """Устанавливает владельца"""
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 class MailingUpdateView(UpdateView):
     """Контролер страницы обновления рассылки"""
@@ -141,25 +360,32 @@ class MailingUpdateView(UpdateView):
     template_name = 'mailing/mailing_form.html'
     success_url = reverse_lazy('mailing:mailing_list')
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if self.request.user.role == 'user':
+            form.fields['message'].queryset = Message.objects.filter(owner=self.request.user)
+        return form
+
 class MailingDeleteView(DeleteView):
     """Контролер страницы удаления рассылки"""
     model = Mailing
     template_name = 'mailing/confirm_delete.html'
     success_url = reverse_lazy('mailing:mailing_list')
 
-
 class MailingAttemptListView(ListView):
     """Контролер страницы списка логов отправки"""
     model = MailingAttempt
     template_name = 'mailing/attempt_list.html'
     context_object_name = 'attempts'
+    # paginate_by = 10
     ordering = ['-created_at']
 
     def get_queryset(self):
-        mailing_id = self.request.GET.get('mailing')
-        if mailing_id:
-            return MailingAttempt.objects.filter(mailing_list_id=mailing_id)
-        return MailingAttempt.objects.all()
+        if self.request.user.role == 'manager':
+            return MailingAttempt.objects.all()
+        elif self.request.user.role == 'user':
+            return MailingAttempt.objects.filter(owner=self.request.user)
+        return MailingAttempt.objects.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -179,20 +405,25 @@ class MailingAttemptListView(ListView):
 
         return context
 
+    def form_valid(self, form):
+        """Устанавливает владельца"""
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
 
 def send_mailing_now(request, pk):
     """Ручная отправка рассылки"""
-    print(f"🖱️ Вызвана отправка рассылки #{pk}")
+    print(f"Вызвана отправка рассылки #{pk}")
 
     mailing = get_object_or_404(Mailing, pk=pk)
-    print(f"📨 Найдена рассылка: {mailing.message.message_subject}")
+    print(f"Найдена рассылка: {mailing.message.message_subject}")
 
     clients = mailing.clients.all()
-    print(f"👥 Клиентов: {clients.count()}")
+    print(f"Клиентов: {clients.count()}")
 
     success, result_message = send_mailing_service(mailing)
 
-    print(f"📊 Результат отправки: {success} - {result_message}")
+    print(f"Результат отправки: {success} - {result_message}")
 
     if success:
         messages.success(request, f"Рассылка отправлена! {result_message}")
@@ -208,7 +439,6 @@ def get_attempt_details(request, pk):
     """Получение деталей попытки отправки"""
     attempt = get_object_or_404(MailingAttempt, pk=pk)
 
-    # Добавим статистику
     recipient_details = []
     if attempt.recipient_details:
         try:
@@ -234,3 +464,12 @@ def get_attempt_details(request, pk):
     }
 
     return JsonResponse(details)
+
+class WebinarListView(ListView):
+    """Контроллер страницы списка вебинаров"""
+    model = None
+    template_name = 'webinar/webinar_list.html'
+    context_object_name = 'webinars'
+
+    def get_queryset(self):
+        return []

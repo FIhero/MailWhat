@@ -15,6 +15,9 @@
     <link rel="stylesheet" href="{% static 'css/components/empty-states.css' %}">
     <link rel="stylesheet" href="{% static 'css/components/modals.css' %}">
     <link rel="stylesheet" href="{% static 'css/components/lists.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/messages.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/users.css' %}">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -43,6 +46,8 @@
 
     {% include 'includes/modal.html' %}
     {% include 'includes/mailing_details_modal.html' %}
+    {% include 'includes/mailing_export-modal.html' %}
+
     
     <script src="{% static 'js/base.js' %}"></script>
     <script src="{% static 'js/mailing-details.js' %}"></script>

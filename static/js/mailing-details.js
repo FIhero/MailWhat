@@ -136,7 +136,7 @@ function showMailingDetails(attemptId) {
     showDetailsModal();
     setLoadingState();
     
-    fetch(`/mailing/attempts/${attemptId}/details/`)  
+    fetch(`/attempts/${attemptId}/details/`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

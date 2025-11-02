@@ -5,6 +5,7 @@
     /* Контейнер для всей страницы клиентов */
 }
 
+.mailings-actions,
 .clients-actions {
     display: flex;
     justify-content: space-between;
@@ -17,6 +18,135 @@
 .search-box {
     flex: 1;
     max-width: 400px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid rgba(17, 34, 80, 0.2);
+    border-radius: 25px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: var(--text-light);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(224, 197, 143, 0.2);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ===== SEARCH AND FILTER CONTAINER ===== */
+.search-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: nowrap;
+}
+
+.search-container {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 30px;
+}
+
+.search-clear {
+    position: absolute;
+    right: 8px;
+    text-decoration: none;
+    font-size: 20px;
+    color: #999;
+    line-height: 1;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.filter-tab {
+    text-decoration: none;
+}
+
+.filter-tab .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-count {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+/* Для адаптивности */
+@media (max-width: 768px) {
+    .search-filter-container {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .search-container {
+        min-width: 100%;
+    }
+    
+    .filter-tabs {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.status-badge.status-success {
+    background: #e8f6f3;
+    color: #27ae60;
+}
+
+.status-badge.status-failure {
+    background: #fdedec;
+    color: #e74c3c;
+}
+
+/* ===== LISTS SYSTEM ===== */
+
+/* ===== CLIENTS LIST ===== */
+.clients-container {
+    /* Контейнер для всей страницы клиентов */
+}
+
+.clients-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .search-input {
@@ -108,6 +238,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    margin-top: 20px
 }
 
 .mailing-info {
@@ -246,6 +377,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    margin-top: 20px
 }
 
 .attempt-main {
@@ -354,11 +486,6 @@
 .error-icon {
     font-size: 1.5em;
     flex-shrink: 0;
-}
-
-.error-text {
-    flex: 1;
-    color: var(--primary-dark);
 }
 
 .error-reasons {
@@ -550,10 +677,6 @@
     .attempts-actions {
         flex-direction: column;
         align-items: stretch;
-    }
-    
-    .search-box {
-        max-width: none;
     }
     
     .filter-actions {

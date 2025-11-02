@@ -18,13 +18,20 @@ def send_mailing_service(mailing):
                 mailing_list=mailing,
                 status='failure',
                 answer=error_msg,
-                recipient_details="[]"
+                recipient_details="[]",
+                owner=mailing.owner
             )
             return False, error_msg
 
         sent_count = 0
         failed_count = 0
         recipient_details = []
+
+        if not settings.EMAIL_HOST_USER:
+            raise Exception("EMAIL_HOST_USER не настроен в settings.py")
+
+        if not settings.EMAIL_HOST_PASSWORD:
+            raise Exception("EMAIL_HOST_PASSWORD не настроен в settings.py")
 
         for client in clients:
             try:
@@ -33,7 +40,7 @@ def send_mailing_service(mailing):
                 send_mail(
                     subject=mailing.message.message_subject,
                     message=mailing.message.message_body,
-                    from_email=settings.DEFAULT_FROM_EMAIL or 'noreply@example.com',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[client.email],
                     fail_silently=False,
                 )
@@ -74,7 +81,8 @@ def send_mailing_service(mailing):
             mailing_list=mailing,
             status=status,
             answer=short_response,
-            recipient_details=json.dumps(recipient_details, ensure_ascii=False)
+            recipient_details=json.dumps(recipient_details, ensure_ascii=False),
+            owner = mailing.owner
         )
 
         print(f"Запись создана с ID: {attempt.id}")
@@ -89,6 +97,8 @@ def send_mailing_service(mailing):
             mailing_list=mailing,
             status='failure',
             answer=error_msg,
-            recipient_details="[]"
+            recipient_details="[]",
+            owner = mailing.owner
         )
         return False, error_msg
+

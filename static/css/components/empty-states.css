@@ -6,6 +6,7 @@
     border-radius: 15px;
     border: 2px dashed var(--primary-active);
     grid-column: 1 / -1;
+    margin-top: 30px;
 }
 
 .empty-icon {
@@ -38,6 +39,7 @@
     border-radius: 15px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     border: 2px solid rgba(17, 34, 80, 0.1);
+    margin-top: 20px;
 }
 
 .development-status h2 {

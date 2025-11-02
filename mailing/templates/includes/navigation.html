@@ -2,9 +2,13 @@
     <a href="{% url 'mailing:home' %}">
         Главная
     </a>
-    <a href="{% url 'mailing:home' %}#webinars">Вебинары</a>  
+    
+    <a href="{% url 'mailing:webinar_list' %}">Вебинары</a>
+    <a href="{% url 'users:lector_list' %}">Лекторы</a>
+
+    {% if user.is_authenticated and user.role == 'user' %}
     <a href="{% url 'mailing:message_list' %}">
-        Уведомления
+        Сообщения
     </a>
     <a href="{% url 'mailing:client_list' %}">
         Клиенты
@@ -15,18 +19,40 @@
     <a href="{% url 'mailing:attempt_list' %}">
         Логи
     </a>
+    {% endif %}
+
+    {% if user.is_authenticated and user.role == 'manager' %}
+    <a href="{% url 'mailing:message_list' %}">
+        Список сообщения
+    </a>
+    <a href="{% url 'mailing:mailing_list' %}">
+        Список всех рассылок
+    </a>
+    <a href="{% url 'mailing:client_list' %}">
+        Список клиентов
+    </a>
+    <a href="#" style="color: #ff6b6b;">
+        Пользователи (в разработке)
+    </a>
+    {% endif %}
 </nav>
+
 <style>
 .main-menu a {
     color: var(--text-light);
     text-decoration: none;
     padding: 12px 20px;
     margin: 0 5px;
-    border-radius: 8px; 
+    border-radius: 8px;
     transition: all 0.3s ease;
     font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.main-menu a:hover {
+    background-color: var(--primary-active);
+    transform: translateY(-2px);
 }
 </style>

@@ -5,43 +5,164 @@
 {% block content %}
 <div class="welcome-section">
     <h1>Добро пожаловать в WS!</h1>
-    <p>Платформа для управления вебинарами и email-рассылками</p>
+    {% if not user.is_authenticated %}
+        <p>Платформа для просмотра вебинаров и деградации</p>
+    
+    {% elif user.role == 'manager' or user.role == 'user' %}
+        <p>Платформа для управления вебинарами и email-рассылками</p>
+    
+    {% elif user.role == 'lector' %}
+        <p>Профессиональная платформа для проведения вебинаров и онлайн-выступлений</p>
+
+    {% endif %}
 </div>
 
-<!-- Статистика -->
+{% if not user.is_authenticated %}
+    <!-- Гости -->
+    <div class="empty-state" style="text-align: left;">
+        <div class="feature-card">
+            <h2 style="text-align: center;">Актуальные вебинары</h2>
+            <p>На этой странице будут отображаться все предстоящие вебинары с возможностью фильтрации по темам, лекторам и датам.</p>
+            <div class="coming-features">
+                <h3>Скоро появится:</h3>
+                <ul class="feature-list">
+                    <li>Каталог всех вебинаров</li>
+                    <li>Фильтрация по жанрам и темам</li>
+                    <li>Поиск по лекторам</li>
+                    <li>Расписание мероприятий</li>
+                    <li>Рекомендации по интересам</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+{% elif user.role == 'manager' %}
+    <!-- Менеджеры -->
+    <div class="stats-grid">
+        <div class="card">
+            <h3>Всего рассылок</h3>
+            <p class="stat-number">{{ total_mailings }}</p>
+        </div>
+        
+        <div class="card">
+            <h3>Активные рассылки</h3>
+            <p class="stat-number">{{ active_mailings }}</p>
+        </div>
+        
+        <div class="card">
+            <h3>Уникальных клиентов</h3>
+            <p class="stat-number">{{ unique_clients }}</p>
+        </div>
+    </div>
+
+{% elif user.role == 'user' %}
+<!-- Пользователи -->
+    <div class="stats-grid">
+        <div class="card">
+            <h3>Мои рассылки</h3>
+            <p class="stat-number">{{ total_mailings }}</p>
+            <small>Всего создано</small>
+        </div>
+        
+        <div class="card">
+            <h3>Активные</h3>
+            <p class="stat-number">{{ active_mailings }}</p>
+            <small>Запущенные рассылки</small>
+        </div>
+        
+        <div class="card">
+            <h3>Мои сообщения</h3>
+            <p class="stat-number">{{ total_messages }}</p>
+            <small>Шаблонов сообщений</small>
+        </div>
+    </div>
+
+    <div class="quick-actions">
+        <h2>Быстрые действия</h2>
+        <div class="action-buttons">
+            <a href="{% url 'mailing:client_create' %}" class="btn btn-accent">Добавить клиента</a>
+            <a href="{% url 'mailing:message_create' %}" class="btn btn-accent">Создать сообщение</a>
+            <a href="{% url 'mailing:mailing_create' %}" class="btn btn-accent">Новая рассылка</a>
+        </div>
+    </div>
+
+{% elif user.role == 'lector' %}
+<!-- Лекторы -->
 <div class="stats-grid">
     <div class="card">
-        <h3>Всего рассылок</h3>
-        <p class="stat-number">{{ total_mailings }}</p>
+        <h3>Всего вебинаров</h3>
+        <p class="stat-number">0</p>
+        <small>Создано за все время</small>
     </div>
     
     <div class="card">
-        <h3>Активные рассылки</h3>
-        <p class="stat-number">{{ active_mailings }}</p>
+        <h3>Проведено</h3>
+        <p class="stat-number">0</p>
+        <small>Успешно завершено</small>
     </div>
     
     <div class="card">
-        <h3>Уникальных клиентов</h3>
-        <p class="stat-number">{{ unique_clients }}</p>
+        <h3>Участников</h3>
+        <p class="stat-number">0</p>
+        <small>Всего регистраций</small>
+    </div>
+    
+    <div class="card">
+        <h3>Активных</h3>
+        <p class="stat-number">0</p>
+        <small>Предстоящих</small>
+    </div>
+</div>
+<div class="form-card">
+    <div class="role-notification">
+        <div class="notification-icon">🚧</div>
+        <div class="notification-title">Функционал в ленивой разработке</div>
+        <div class="notification-text">
+            Данная роль находится в пассивной разработке. Статистика отображается в демо-режиме.<br>
+            Кнопки ниже неактивны и добавлены для демонстрации будущего функционала.
+        </div>
+    </div>
+    </div>
+
+<div class="webinar-details" style="margin-top: 30px;">
+    <div class="card">
+        <h3>Детальная статистика (демо)</h3>
+        <div class="details-grid">
+            <div class="detail-item">
+                <span class="detail-label">Средняя посещаемость:</span>
+                <span class="detail-value">0%</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Уникальных участников:</span>
+                <span class="detail-value">0</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Запланировано:</span>
+                <span class="detail-value">0</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Рейтинг лектора:</span>
+                <span class="detail-value">⭐ 0.0/5.0</span>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Быстрые действия -->
 <div class="quick-actions">
-    <h2>Быстрые действия</h2>
+    <h2>Быстрые действия (демо)</h2>
     <div class="action-buttons">
-        <a href="{% url 'mailing:client_create' %}" class="btn btn-accent">Добавить клиента</a>
-        <a href="{% url 'mailing:message_create' %}" class="btn btn-accent">Создать сообщение</a>
-        <a href="{% url 'mailing:mailing_create' %}" class="btn btn-accent">Новая рассылка</a>
+        <button class="btn btn-disabled" disabled>Создать вебинар</button>
+        <button class="btn btn-disabled" disabled>Управление участниками</button>
+        <button class="btn btn-disabled" disabled>Материалы вебинаров</button>
+        <button class="btn btn-disabled" disabled>Расписание</button>
     </div>
 </div>
+{% endif %}
 
-<!-- Состояние разработки -->
 <div class="development-status">
-    <h2>📊 Состояние разработки</h2>
+    <h2>Состояние разработки</h2>
     
     <div class="status-grid">
-        <!-- ЧАСТЬ 1 - ГОТОВО -->
         <div class="status-section">
             <h3>✅ Часть 1 - Базовая функциональность (ГОТОВО)</h3>
             <ul class="feature-list">
@@ -55,7 +176,6 @@
             </ul>
         </div>
 
-        <!-- ЧАСТЬ 2 - В РАЗРАБОТКЕ -->
         <div class="status-section">
             <h3>🔄 Часть 2 - Расширенная функциональность (В РАЗРАБОТКЕ)</h3>
             <ul class="feature-list">
@@ -67,7 +187,6 @@
             </ul>
         </div>
 
-        <!-- ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ -->
         <div class="status-section">
             <h3>🔧 Дополнительные функции (В ПЛАНАХ)</h3>
             <ul class="feature-list">

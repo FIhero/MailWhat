@@ -1,14 +1,13 @@
-import os
-
-from django.core.mail import send_mail
 from django.db import models
-from django.shortcuts import redirect
+
+from users.models import User
 
 
 class Client(models.Model):
     email = models.EmailField(unique=True, verbose_name='Email')
     full_name = models.CharField(max_length=100, verbose_name='ФИО')
     comment = models.TextField(blank=True, null=True, verbose_name='Комментарий')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Владелец')
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -23,6 +22,7 @@ class Client(models.Model):
 class Message(models.Model):
     message_subject = models.CharField(max_length=100)
     message_body = models.TextField(max_length=500)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Владелец')
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -50,6 +50,7 @@ class Mailing(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_CREATED, verbose_name='Статус')
     message = models.ForeignKey('Message', on_delete=models.CASCADE, verbose_name='Сообщение')
     clients = models.ManyToManyField('Client', verbose_name='Клиенты')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Владелец')
 
     def __str__(self):
         return f"Рассылка {self.id} ({self.status})"
@@ -57,6 +58,14 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = "Рассылка"
         verbose_name_plural = "Рассылки"
+
+    @property
+    def success_count(self):
+        return self.mailingattempt_set.filter(status='success').count()
+
+    @property
+    def failure_count(self):
+        return self.mailingattempt_set.filter(status='failure').count()
 
 
 class MailingAttempt(models.Model):
@@ -73,6 +82,7 @@ class MailingAttempt(models.Model):
     answer = models.TextField(blank=True, null=True, verbose_name='Ответ сервера')
     mailing_list = models.ForeignKey(Mailing, on_delete=models.CASCADE, verbose_name='Рассылка')
     recipient_details = models.TextField(blank=True, null=True, verbose_name='Детали получателей')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Владелец')
 
     def __str__(self):
         return f"Попытка {self.id} ({self.status})"
