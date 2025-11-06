@@ -1,0 +1,92 @@
+/* ===== HEADER SYSTEM ===== */
+.clients-header,
+.mailings-header,
+.notifications-header,
+.attempts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.clients-header h1,
+.mailings-header h1,
+.notifications-header h1,
+.attempts-header h1 {
+    margin-bottom: 0;
+    color: var(--primary-dark);
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ===== PAGE SPECIFIC HEADERS ===== */
+.attempt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    gap: 20px;
+}
+
+.mailing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+
+.delete-header {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.delete-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.delete-header h1 {
+    color: white;
+    margin: 0;
+    font-size: 1.8em;
+    border-bottom: none;
+}
+
+@media (max-width: 768px) {
+    .clients-header,
+    .mailings-header,
+    .notifications-header,
+    .attempts-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .header-actions {
+        justify-content: center;
+    }
+    
+    .attempt-header,
+    .mailing-header,
+    .notification-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

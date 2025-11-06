@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Лекторы - WS{% endblock %}
+
+{% block content %}
+
+<div class="webinars-container">
+    {% if user.is_authenticated %}
+        <div class="empty-state">
+            <div class="empty-icon">👨‍🏫</div>
+            <h2>Система лекторов в разработке</h2>
+            <p>Функционал для управления лекторами находится в пассивной разработке.</p>
+            <p>Скоро здесь появится возможность:</p>
+            <ul class="feature-list">
+                <li>Просматривать профили лекторов</li>
+                <li>Оценивать и оставлять отзывы о вебинарах</li>
+                <li>Фильтровать лекторов по специализациям</li>
+                <li>Смотреть расписание предстоящих вебинаров</li>
+                <li>Связываться с лекторами для сотрудничества</li>
+            </ul>
+            
+            <div class="role-notification">
+                <h3>Роль "Лектор"</h3>
+                <p>В текущей версии системы роль лектора ещё не реализована. 
+                   Мы пассивно работаем над добавлением функционала для проведения вебинаров.</p>
+            </div>
+            
+            <div class="form-section">
+                <h3 class="section-title">Что будет доступно лекторам:</h3>
+                <div class="tips-grid">
+                    <div class="tip-item">
+                        <strong>Создание вебинаров</strong> - планирование и проведение онлайн-трансляций
+                    </div>
+                    <div class="tip-item">
+                        <strong>Материалы для слушателей</strong> - загрузка презентаций и дополнительных материалов
+                    </div>
+                    <div class="tip-item">
+                        <strong>Управление участниками</strong> - приглашения и взаимодействие с аудиторией
+                    </div>
+                    <div class="tip-item">
+                        <strong>Чат и Q&A сессии</strong> - общение с участниками во время вебинаров
+                    </div>
+                </div>
+            </div>
+            
+            
+            <div class="action-buttons">
+                <a href="{% url 'mailing:home' %}" class="btn btn-accent" style="margin-top: 20px;">
+                    Вернуться на главную
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">👨‍🏫</div>
+            <h2>Система лекторов в разработке</h2>
+            <p>Функционал для просмотра лекторов находится в пассивной разработке.</p>
+            <p>Скоро здесь появится возможность:</p>
+            <ul class="feature-list">
+                <li>Просматривать список всех лекторов</li>
+                <li>Ознакомиться с профилями и специализацией</li>
+                <li>Смотреть рейтинги и отзывы</li>
+                <li>Найти лекторов по интересующим темам</li>
+                <li>Посмотреть расписание вебинаров</li>
+                <li></li>
+            </ul>
+            
+            <div class="action-buttons">
+                <a href="{% url 'users:login' %}" class="btn btn-accent">Войти в систему</a>
+                <a href="{% url 'users:register' %}" class="btn btn-cancel">Зарегистрироваться</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

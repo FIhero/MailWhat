@@ -1,0 +1,70 @@
+/* ===== MESSAGE STYLES ===== */
+.messages {
+    margin: 20px 0;
+}
+
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-weight: 500;
+    text-align: center;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border-left-color: #28a745;
+}
+
+.alert-error, .alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border-left-color: #dc3545;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border-left-color: #17a2b8;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border-left-color: #ffc107;
+}
+
+/* Формовые сообщения */
+.form-help {
+    text-align: center;
+    color: #17a2b8;
+    background: #d1ecf1;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border-left: 4px solid #17a2b8;
+    margin: 15px 0;
+    font-weight: 500;
+}
+
+.form-success {
+    text-align: center;
+    color: #155724;
+    background: #d4edda;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+    margin: 15px 0;
+    font-weight: 500;
+}
+
+.form-errors {
+    text-align: center;
+    color: #721c24;
+    background: #f8d7da;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border-left: 4px solid #dc3545;
+    margin: 15px 0;
+    font-weight: 500;
+}

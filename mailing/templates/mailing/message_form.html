@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if object %}Редактирование уведомления{% else %}Создание уведомления{% endif %} - WS
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>{% if object %}Редактирование уведомления{% else %}Создание уведомления{% endif %}</h1>
+        <p>{% if object %}Измените данные уведомления{% else %}Заполните форму для создания нового уведомления{% endif %}</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post" class="message-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                {% for error in form.non_field_errors %}
+                    <div class="error-message">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="{{ form.message_subject.id_for_label }}" class="form-label">
+                    {{ form.message_subject.label }}
+                </label>
+                {{ form.message_subject }}
+                {% if form.message_subject.errors %}
+                <div class="field-errors">
+                    {% for error in form.message_subject.errors %}
+                        <span class="error-text">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.message_body.id_for_label }}" class="form-label">
+                    {{ form.message_body.label }}
+                </label>
+                {{ form.message_body }}
+                {% if form.message_body.errors %}
+                <div class="field-errors">
+                    {% for error in form.message_body.errors %}
+                        <span class="error-text">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="char-counter">
+                    <span id="char-count">0</span> символов
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-accent btn-large">
+                    {% if object %}Сохранить изменения{% else %}Создать уведомление{% endif %}
+                </button>
+                <a href="{% url 'mailing:message_list' %}" class="btn btn-cancel">
+                    Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.querySelector('.form-textarea');
+    const charCount = document.getElementById('char-count');
+    
+    if (textarea && charCount) {
+        charCount.textContent = textarea.value.length;
+        
+        textarea.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+    }
+});
+</script>
+{% endblock %}

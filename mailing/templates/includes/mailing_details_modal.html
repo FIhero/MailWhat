@@ -1,0 +1,43 @@
+<div id="details-modal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>Детали отправки</h3>
+            <span class="modal-close" onclick="closeDetailsModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 4em; margin-bottom: 20px;">🔧</div>
+                <h3 style="color: var(--primary-dark); margin-bottom: 15px;">Функция в разработке</h3>
+                <p style="color: var(--primary-active); line-height: 1.6; margin-bottom: 25px;">
+                    Детальная статистика по каждому получателю находится в разработке.<br>
+                    Скоро здесь появится информация о том, кому успешно отправились письма и у кого возникли ошибки.
+                </p>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeDetailsModal()" class="btn btn-accent">Понятно</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const detailsModal = document.getElementById('details-modal');
+
+function showDetailsModal() {
+    detailsModal.style.display = 'block';
+}
+
+function closeDetailsModal() {
+    detailsModal.style.display = 'none';
+}
+
+function showMailingDetails(attemptId) {
+    showDetailsModal();
+}
+
+window.addEventListener('click', function(event) {
+    if (event.target === detailsModal) {
+        closeDetailsModal();
+    }
+});
+</script>

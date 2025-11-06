@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Профиль - WS{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>Личный кабинет</h1>
+        <p>Управляйте вашими данными и настройками</p>
+    </div>
+
+    <div class="profile-layout">
+        <aside class="profile-sidebar">
+            <div class="user-card">
+                <div class="user-avatar">
+                    {{ user.first_name.0 }}{{ user.last_name.0 }}
+                </div>
+                <h3 class="user-name">{{ user.first_name }} {{ user.last_name }}</h3>
+                <div class="user-email">{{ user.email }}</div>
+                <div class="user-role">
+                    {% if user.role == 'user' %}Пользователь
+                    {% elif user.role == 'lector' %}Лектор
+                    {% elif user.role == 'manager' %}Менеджер
+                    {% endif %}
+                </div>
+            </div>
+
+            <nav class="profile-nav">
+                <a href="javascript:void(0)" class="nav-item active" data-section="personal">
+                    <span class="nav-text">Личные данные</span>
+                </a>
+                <a href="javascript:void(0)" class="nav-item" data-section="security">
+                    <span class="nav-text">Безопасность</span>
+                </a>
+                {% if user.role == 'lector' %}
+                <a href="javascript:void(0)" class="nav-item" data-section="lector">
+                    <span class="nav-text">Профиль лектора</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'users:logout' %}" class="nav-item logout">
+                    <span class="nav-text">Выйти из системы</span>
+                </a>
+                <div class="stat-label">Дата регистрации: {{ user.date_joined|date:"d.m.Y" }}</div>
+            </nav>
+        </aside>
+
+        <main class="profile-content">
+            <section id="personal" class="profile-section active">
+                <div class="section-header">
+                    <h2>Личные данные</h2>
+                    <p>Управление основной информацией профиля</p>
+                </div>
+                
+                <div class="form-card">
+                    <form method="post" class="profile-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="personal">
+                        
+                        <div class="form-grid">
+                            <div class="form-column">
+                                <div class="form-group">
+                                    <label class="form-label">Имя</label>
+                                    <input type="text" class="form-input" value="{{ user.first_name }}" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-input" value="{{ user.email }}" readonly>
+                                </div>
+                            </div>
+                            <div class="form-column">
+                                <div class="form-group">
+                                    <label class="form-label">Фамилия</label>
+                                    <input type="text" class="form-input" value="{{ user.last_name }}" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Телефон</label>
+                                    <input type="tel" class="form-input" value="{{ user.phone|default:'Не указан' }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <a href="{% url 'users:user_update' %}" class="btn btn-cancel">
+                                Редактировать
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section id="security" class="profile-section">
+                <div class="section-header">
+                    <h2>Безопасность</h2>
+                    <p>Управление паролем и настройками безопасности</p>
+                    <p style="color:rgba(0, 0, 0, 0.1)">
+                        Пока сайтом управляет НЛО, мы не сможем сделать форму смены пароля</p>
+                </div>
+                
+                <div class="form-card">
+                    <div class="security-status">
+                        <h3>Текущий статус безопасности</h3>
+                        <ul class="security-list">
+                            <li>Пока учимся определять...</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="post" class="security-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="security">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Текущий пароль</label>
+                            <input type="password" name="current_password" class="form-input" 
+                                   placeholder="Введите текущий пароль" required>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-column">
+                                <div class="form-group">
+                                    <label class="form-label">Новый пароль</label>
+                                    <input type="password" name="new_password1" class="form-input" 
+                                           placeholder="Не менее 8 символов" required>
+                                </div>
+                            </div>
+                            <div class="form-column">
+                                <div class="form-group">
+                                    <label class="form-label">Подтверждение</label>
+                                    <input type="password" name="new_password2" class="form-input" 
+                                           placeholder="Повторите новый пароль" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <p class="btn btn-cancel">
+                                Сменить пароль</p>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            {% if user.role == 'lector' %}
+            <section id="lector" class="profile-section">
+                <div class="section-header">
+                    <h2>Профиль лектора</h2>
+                    <p>Управление информацией для проведения вебинаров</p>
+                </div>
+                
+                <div class="form-card">
+                    <div class="role-notification">
+                        <div class="notification-icon">🚧</div>
+                        <div class="notification-title">Функционал в разработке</div>
+                        <div class="notification-text">
+                            Раздел для лекторов находится в ленивой разработке. <br>
+                            Скоро здесь появится возможность управлять вебинарами, <br>
+                            материалами и расписанием выступлений.
+                        </div>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const navItems = document.querySelectorAll('.nav-item[data-section]');
+    const sections = document.querySelectorAll('.profile-section');
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetSection = this.getAttribute('data-section');
+            
+            sections.forEach(section => section.classList.remove('active'));
+            document.getElementById(targetSection).classList.add('active');
+            
+            navItems.forEach(nav => nav.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    
+    window.enableEditing = function(formType) {
+        alert('Функция редактирования будет реализована в ближайшее время!');
+    };
+});
+</script>
+{% endblock %}

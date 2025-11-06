@@ -1,0 +1,112 @@
+/* Стили для статусов и предпросмотра */
+.status-preview {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(17, 34, 80, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(17, 34, 80, 0.1);
+}
+
+.status-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.status-created {
+    background: #fef9e7;
+    border-left: 4px solid #f39c12;
+}
+
+.status-started {
+    background: #e8f6f3;
+    border-left: 4px solid #27ae60;
+}
+
+.status-completed {
+    background: #f8f9fa;
+    border-left: 4px solid #7f8c8d;
+}
+
+.status-icon {
+    font-size: 1.5em;
+}
+
+.status-info {
+    flex: 1;
+}
+
+.status-title {
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+.status-description {
+    font-size: 0.9em;
+    color: var(--primary-active);
+    margin-top: 4px;
+}
+
+.status-time {
+    font-size: 0.9em;
+    color: var(--primary-active);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(17, 34, 80, 0.1);
+}
+
+.preview-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.preview-status.status-created {
+    background: #fef9e7;
+    color: #f39c12;
+}
+
+.preview-status.status-started {
+    background: #e8f6f3;
+    color: #27ae60;
+}
+
+.preview-status.status-completed {
+    background: #f8f9fa;
+    color: #7f8c8d;
+}
+
+.sending-times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.time-tag {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.time-pending {
+    background: #fef9e7;
+    color: #f39c12;
+    border: 1px solid #f39c12;
+}
+
+.time-sent {
+    background: #e8f6f3;
+    color: #27ae60;
+    border: 1px solid #27ae60;
+}
+
+.time-none {
+    color: #7f8c8d;
+    font-style: italic;
+}

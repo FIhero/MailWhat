@@ -1,0 +1,189 @@
+/* ===== CARD SYSTEM ===== */
+.card {
+    background: var(--text-light);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--accent);
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== SPECIFIC CARDS ===== */
+.client-card {
+    background: var(--text-light);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    border-left: 4px solid var(--accent);
+}
+
+.client-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.mailing-card {
+    background: var(--text-light);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--primary-dark);
+}
+
+.mailing-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.mailing-card.status-active {
+    border-left-color: var(--success);
+}
+
+.mailing-card.status-completed {
+    border-left-color: #7f8c8d;
+}
+
+.mailing-card.status-created {
+    border-left-color: #f39c12;
+}
+
+.notification-card {
+    background: var(--text-light);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid var(--accent);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.used-card {
+    border-left: 4px solid var(--success);
+    background: linear-gradient(135deg, var(--text-light), #e8f6f3);
+}
+
+.draft-card {
+    border-left: 4px solid #f39c12;
+    background: linear-gradient(135deg, var(--text-light), #fef9e7);
+}
+
+.attempt-card {
+    background: var(--text-light);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--primary-dark);
+}
+
+.attempt-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.attempt-card.status-success {
+    border-left-color: var(--success);
+}
+
+.attempt-card.status-failure {
+    border-left-color: var(--error);
+}
+
+.stat-card {
+    background: var(--text-light);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--primary-dark);
+}
+
+.stat-success {
+    border-left-color: var(--success);
+}
+
+.stat-failure {
+    border-left-color: var(--error);
+}
+
+.stat-draft {
+    border-left-color: #f39c12;
+}
+
+/* ===== CARD ELEMENTS ===== */
+.client-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-active));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.preview-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-active));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.preview-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(17, 34, 80, 0.1);
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.filter-card {
+    background: rgba(17, 34, 80, 0.05);
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid var(--accent);
+}
+
+@media (max-width: 768px) {
+    .client-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .preview-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+}

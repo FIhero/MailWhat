@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Вебинары - WS{% endblock %}
+
+{% block content %}
+
+<div class="webinars-container">
+    {% if user.is_authenticated %}
+        <div class="empty-state">
+            <div class="empty-icon">🎥</div>
+            <h2>Система вебинаров в разработке</h2>
+            <p>Функционал для создания и управления вебинарами находится в пассивной разработке.</p>
+            <p>Скоро здесь появится возможность:</p>
+            <ul class="feature-list">
+                <li>Создавать и планировать вебинары</li>
+                <li>Приглашать участников</li>
+                <li>Проводить онлайн-трансляции</li>
+                <li>Анализировать статистику посещений</li>
+                <li>Интегрировать с системой рассылок</li>
+            </ul>
+            
+            {% if user.role == 'lector' %}
+            <div class="role-notification">
+                <h3>Для лекторов:</h3>
+                <p>Вы сможете создавать собственные вебинары, приглашать клиентов и отслеживать участие.</p>
+            </div>
+            {% endif %}
+            
+            <div class="action-buttons">
+                <a href="{% url 'mailing:home' %}" class="btn btn-accent" style="margin-top: 20px;">
+                    Вернуться на главную
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🎥</div>
+            <h2>Система вебинаров в разработке</h2>
+            <p>Функционал для просмотра вебинаров находится в пассивной разработке.</p>
+            <p>Скоро здесь появится возможность:</p>
+            <ul class="feature-list">
+                <li>Просматривать вебинары</li>
+                <li>Приглашать участников</li>
+                <li>Фильтровать по темам и лекторам вебинаров</li>
+                <li>Анализировать статистику своих посещений</li>
+            </ul>
+            <div class="action-buttons">
+                <a href="{% url 'mailing:home' %}" class="btn btn-accent" style="margin-top: 20px;">
+                    Вернуться на главную
+                </a>
+            </div>
+        </div>   
+    {% endif %}
+</div>
+{% endblock %}

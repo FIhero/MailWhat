@@ -1,0 +1,110 @@
+<div id="time-error-modal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>Ошибка настройки времени</h3>
+            <span class="modal-close" onclick="closeTimeErrorModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div style="text-align: center; padding: 30px 20px;">
+                <div style="font-size: 4em; margin-bottom: 20px;">⏰</div>
+                <h3 style="color: var(--primary-dark); margin-bottom: 15px; border-bottom: none;">Некорректное время отправки</h3>
+                <p style="color: var(--primary-active); line-height: 1.6; margin-bottom: 25px;">
+                    Не удалось добавить время отправки из-за следующих ограничений:
+                </p>
+                
+                <div class="card" style="margin: 20px 0; text-align: left;">
+                    <h4 style="color: var(--primary-dark); margin-bottom: 15px; border-bottom: none;">Требования к времени отправки:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em; color: #e74c3c;">⏱️</span>
+                            <div>
+                                <strong style="color: var(--primary-dark);">Не может быть в прошлом</strong>
+                                <div style="font-size: 0.9em; color: var(--primary-active);">Время отправки должно быть в будущем</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em; color: #e67e22;">📅</span>
+                            <div>
+                                <strong style="color: var(--primary-dark);">В пределах периода рассылки</strong>
+                                <div style="font-size: 0.9em; color: var(--primary-active);">Между началом и окончанием рассылки</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em; color: #f39c12;">🚫</span>
+                            <div>
+                                <strong style="color: var(--primary-dark);">Не для завершённых рассылок</strong>
+                                <div style="font-size: 0.9em; color: var(--primary-active);">Только для активных и будущих рассылок</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em; color: #3498db;">✅</span>
+                            <div>
+                                <strong style="color: var(--primary-dark);">Сначала укажите период</strong>
+                                <div style="font-size: 0.9em; color: var(--primary-active);">Заполните даты начала и окончания</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="background: rgba(224, 197, 143, 0.1); border-left: 4px solid var(--accent); padding: 15px;">
+                    <strong style="color: var(--primary-dark);">Рекомендация:</strong> 
+                    <span style="color: var(--primary-dark);">
+                        Проверьте даты начала и окончания рассылки, затем попробуйте снова
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeTimeErrorModal()" class="btn btn-accent">Понятно</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const timeErrorModal = document.getElementById('time-error-modal');
+
+function showTimeErrorModal(message, errorType = 'general') {
+    const titleElement = timeErrorModal.querySelector('h3');
+    const messageElement = timeErrorModal.querySelector('p');
+    const iconElement = timeErrorModal.querySelector('.modal-body > div > div:first-child');
+    
+    switch(errorType) {
+        case 'no_dates':
+            titleElement.textContent = 'Не указаны даты рассылки';
+            messageElement.textContent = 'Для добавления времени отправки необходимо сначала указать период рассылки:';
+            iconElement.textContent = '📅';
+            break;
+        case 'completed':
+            titleElement.textContent = 'Рассылка завершена';
+            messageElement.textContent = 'Невозможно добавить время отправки для завершённой рассылки:';
+            iconElement.textContent = '✅';
+            break;
+        case 'expired':
+            titleElement.textContent = 'Срок рассылки истёк';
+            messageElement.textContent = 'Время рассылки уже прошло, нельзя добавлять новые отправки:';
+            iconElement.textContent = '⏰';
+            break;
+        case 'past_time':
+            titleElement.textContent = 'Время в прошлом';
+            messageElement.textContent = 'Не удалось установить время отправки по следующей причине:';
+            iconElement.textContent = '⏱️';
+            break;
+        default:
+            titleElement.textContent = 'Ошибка настройки времени';
+            messageElement.textContent = message || 'Не удалось добавить время отправки:';
+            iconElement.textContent = '⚠️';
+    }
+    
+    timeErrorModal.style.display = 'block';
+}
+
+function closeTimeErrorModal() {
+    timeErrorModal.style.display = 'none';
+}
+
+window.addEventListener('click', function(event) {
+    if (event.target === timeErrorModal) {
+        closeTimeErrorModal();
+    }
+});
+</script>

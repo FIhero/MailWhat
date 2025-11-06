@@ -1,0 +1,50 @@
+<div id="delete-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="delete-title">Подтверждение удаления</h3>
+            <span class="modal-close" onclick="closeDeleteModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-text">
+                    <h4>Внимание! Это действие необратимо.</h4>
+                    <p id="delete-message">Вы уверены, что хотите удалить этот объект?</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeDeleteModal()" class="btn btn-cancel">Отмена</button>
+            <button id="delete-confirm" class="btn btn-danger">Удалить навсегда</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const deleteModal = document.getElementById('delete-modal');
+let deleteUrl = '';
+
+function showDeleteModal(title, message, url) {
+    document.getElementById('delete-title').textContent = title;
+    document.getElementById('delete-message').textContent = message;
+    deleteUrl = url;
+    deleteModal.style.display = 'block';
+}
+
+function closeDeleteModal() {
+    deleteModal.style.display = 'none';
+    deleteUrl = '';
+}
+
+document.getElementById('delete-confirm').addEventListener('click', function() {
+    if (deleteUrl) {
+        window.location.href = deleteUrl;
+    }
+});
+
+window.addEventListener('click', function(event) {
+    if (event.target === deleteModal) {
+        closeDeleteModal();
+    }
+});
+</script>

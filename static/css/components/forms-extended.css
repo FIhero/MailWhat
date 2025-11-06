@@ -1,0 +1,112 @@
+/* Дополнительные стили для форм */
+.form-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.send-times-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.send-time-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.send-time-input {
+    flex: 1;
+}
+
+.remove-time-btn {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-box {
+    margin-bottom: 15px;
+}
+
+.client-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+}
+
+.client-item:hover {
+    background-color: #f5f5f5;
+}
+
+.client-item.hidden {
+    display: none;
+}
+
+.client-email-preview {
+    color: #666;
+    font-size: 12px;
+}
+
+.selected-recipients {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.recipients-list {
+    margin-top: 10px;
+}
+
+.recipient-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    border: 1px solid #e9ecef;
+}
+
+.recipient-info {
+    flex-grow: 1;
+}
+
+.recipient-name {
+    font-weight: 500;
+}
+
+.recipient-email {
+    font-size: 12px;
+    color: #666;
+}
+
+.remove-recipient {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.remove-recipient:hover {
+    background: #c82333;
+}

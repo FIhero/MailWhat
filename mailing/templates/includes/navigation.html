@@ -1,0 +1,38 @@
+<nav class="main-menu">
+    <a href="{% url 'mailing:home' %}">
+        Главная
+    </a>
+    
+    <a href="{% url 'mailing:webinar_list' %}">Вебинары</a>
+    <a href="{% url 'users:lector_list' %}">Лекторы</a>
+
+    {% if user.is_authenticated and user.role == 'user' %}
+    <a href="{% url 'mailing:message_list' %}">
+        Сообщения
+    </a>
+    <a href="{% url 'mailing:client_list' %}">
+        Клиенты
+    </a>
+    <a href="{% url 'mailing:mailing_list' %}">
+        Рассылки
+    </a>
+    <a href="{% url 'mailing:attempt_list' %}">
+        Логи
+    </a>
+    {% endif %}
+
+    {% if user.is_authenticated and user.role == 'manager' %}
+    <a href="{% url 'mailing:message_list' %}">
+        Список сообщения
+    </a>
+    <a href="{% url 'mailing:mailing_list' %}">
+        Список всех рассылок
+    </a>
+    <a href="{% url 'mailing:client_list' %}">
+        Список клиентов
+    </a>
+    <a href="#" style="color: #ff6b6b;">
+        Пользователи (в разработке)
+    </a>
+    {% endif %}
+</nav>

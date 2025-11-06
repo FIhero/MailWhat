@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Сообщения - WS{% endblock %}
+
+{% block content %}
+
+<div class="notifications-header">
+    <h1>Все сообщения</h1>
+    <div class="header-actions">
+        <a href="{% url 'mailing:message_create' %}" class="btn btn-accent">➕ Создать сообщение</a>
+    </div>
+</div>
+
+<div class="clients-actions">
+    <div class="search-box">
+        <form method="get" class="search-form" style="position: relative;">
+            <input type="hidden" name="filter" value="{{ current_filter }}">
+            <input type="text" 
+                   name="q" 
+                   id="messageSearch"
+                   placeholder="Поиск по теме или тексту сообщения..." 
+                   value="{{ query|default:'' }}"
+                   class="search-input">
+            {% if query %}
+            <a href="?filter={{ current_filter }}" 
+               style="position: absolute; right: 8px; text-decoration: none; font-size: 20px; color: #999; line-height: 1;">×</a>
+            {% endif %}
+        </form>
+    </div>
+    
+    <div class="filter-actions">
+        <a href="?filter=all" class="btn btn-small btn-filter {% if current_filter == 'all' or not current_filter %}active{% endif %}">
+            Все сообщения 
+            <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 10px; font-size: 12px; margin-left: 5px;">
+                {{ all_count|default:0 }}
+            </span>
+        </a>
+        <a href="?filter=draft" class="btn btn-small btn-filter {% if current_filter == 'draft' %}active{% endif %}">
+            Черновики 
+            <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 10px; font-size: 12px; margin-left: 5px;">
+                {{ draft_count|default:0 }}
+            </span>
+        </a>
+        <a href="?filter=used" class="btn btn-small btn-filter {% if current_filter == 'used' %}active{% endif %}">
+            Использованные 
+            <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 10px; font-size: 12px; margin-left: 5px;">
+                {{ used_count|default:0 }}
+            </span>
+        </a>
+    </div>
+</div>
+
+<div class="notifications-container">
+    {% if messages %}
+        <div class="notifications-list">    
+            {% for message in messages %}
+                <div class="notification-card {% if message.mailing_set.exists %}used-card{% else %}draft-card{% endif %}">
+                    <div class="notification-header">
+                        <div class="notification-title-section">
+                            <h3 class="notification-subject">{{ message.message_subject }}</h3>
+                            {% if user.role == 'manager' and message.owner %}
+                            <span class="message-author">🫂 {{ message.owner.email }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="notification-badges">
+                            {% if message.mailing_set.exists %}
+                                <span class="notification-badge used-badge">Использовано</span>
+                            {% else %}
+                                <span class="notification-badge draft-badge">Черновик</span>
+                            {% endif %}
+                            <span class="notification-date">{{ message.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-body">
+                        <p class="notification-text">{{ message.message_body|truncatewords:30 }}</p>
+                    </div>
+                    
+                    <div class="notification-meta">
+                        {% if message.mailing_set.exists %}
+                        <div class="mailings-list">
+                            <strong>Использовано в рассылках:</strong>
+                            <div class="mailings-links">
+                                {% for mailing in message.mailing_set.all %}
+                                <a href="{% url 'mailing:attempt_list' %}?mailing={{ mailing.pk }}" 
+                                   class="mailing-link" title="Посмотреть логи рассылки">
+                                    #{{ mailing.id }} - {{ mailing.start_time|date:"d.m.Y" }}
+                                </a>
+                                {% if not forloop.last %} • {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <span class="notification-usage">
+                            Еще не использовалось в рассылках
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% if user.role != 'manager' %}
+                    <div class="notification-actions">
+                        <a href="{% url 'mailing:message_update' message.pk %}" 
+                        class="btn btn-small btn-filter">
+                            Изменить
+                        </a>
+                        <a href="#" class="btn btn-small btn-danger delete-btn"
+                            data-delete-url="{% url 'mailing:message_delete' message.pk %}"
+                            data-object-name="{{ message.message_subject }}">
+                            Удалить
+                        </a>
+                        {% if not message.mailing_set.exists %}
+                        <a href="{% url 'mailing:mailing_create_with_message' message.pk %}" 
+                        class="btn btn-accent btn-small">
+                            Создать рассылку
+                        </a>
+                        {% else %}
+                        <a href="{% url 'mailing:mailing_create_with_message' message.pk %}" 
+                        class="btn btn-small btn-success">
+                            Создать новую рассылку
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {% if query %}
+        <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <h2>Ничего не найдено</h2>
+            <p>Сообщения по запросу "{{ query }}" не найдены.</p>
+            <a href="?filter={{ current_filter }}" class="btn btn-accent">Показать все сообщения</a>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                {% if current_filter == 'draft' %}📝
+                {% elif current_filter == 'used' %}📧
+                {% else %}📭{% endif %}
+            </div>
+            <h2>
+                {% if current_filter == 'draft' %}Нет черновиков
+                {% elif current_filter == 'used' %}Нет использованных сообщений
+                {% else %}Нет сообщений{% endif %}
+            </h2>
+            <p>
+                {% if current_filter == 'draft' %}Все сообщения уже использованы в рассылках.
+                {% elif current_filter == 'used' %}Сообщения еще не использовались в рассылках.
+                {% else %}У вас пока нет созданных сообщений.{% endif %}
+            </p>
+            <div class="empty-actions">
+                <a href="{% url 'mailing:message_create' %}" class="btn btn-accent">➕ Создать сообщение</a>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,58 @@
+<script>
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    const modalConfirm = document.getElementById('modal-confirm');
+    const modalCancel = document.getElementById('modal-cancel');
+    const modalClose = document.querySelector('.modal-close');
+
+    let confirmCallback = null;
+
+    function showModal(title, message, callback) {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        confirmCallback = callback;
+        modal.style.display = 'block';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        confirmCallback = null;
+    }
+
+    modalClose.addEventListener('click', closeModal);
+    modalCancel.addEventListener('click', closeModal);
+
+    modalConfirm.addEventListener('click', function() {
+        if (confirmCallback) {
+            confirmCallback();
+        }
+        closeModal();
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    function confirmMailingSend(url) {
+        showModal(
+            'Отправка рассылки',
+            'Вы уверены, что хотите отправить эту рассылку сейчас? Все выбранные клиенты получат письмо.',
+            function() {
+                window.location.href = url;
+            }
+        );
+    }
+
+    function confirmDelete(url, objectName) {
+        showModal(
+            'Подтверждение удаления',
+            `Вы уверены, что хотите удалить "${objectName}"? Это действие нельзя отменить.`,
+            function() {
+                window.location.href = url;
+            }
+        );
+    }
+</script>

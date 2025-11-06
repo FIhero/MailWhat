@@ -1,0 +1,30 @@
+<div class="user-info">
+    {% if user.is_authenticated %}
+        <strong>{{ user.email }}</strong> 
+        <a href="{% url 'users:profile' %}">Профиль</a>
+        <a href="{% url 'users:logout' %}">Выйти</a>
+    {% else %}
+        <a href="{% url 'users:login' %}">Войти</a>
+        <a href="{% url 'users:register' %}">Регистрация</a>
+    {% endif %}
+</div>
+
+<style>
+    .user-info {
+        background-color: var(--primary-dark);
+        color: var(--text-light);
+        padding: 10px 20px;
+        text-align: right;
+        font-size: 14px;
+    }
+
+    .user-info a {
+        color: var(--accent);
+        text-decoration: none;
+        margin-left: 15px;
+    }
+
+    .user-info a:hover {
+        text-decoration: underline;
+    }
+</style>

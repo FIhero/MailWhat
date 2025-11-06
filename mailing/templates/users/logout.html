@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Выход - WS{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>Выход из системы</h1>
+        <p>Вы собираетесь выйти из вашего аккаунта?</p>
+    </div>
+
+    <div class="form-card">
+        <div class="logout-content">
+            
+                <div class="logout-avatar">
+                    {{ user.first_name.0 }}{{ user.last_name.0 }}
+                </div>
+                <div class="logout-name">{{ user.first_name }} {{ user.last_name }}</div>
+                <div class="logout-email">{{ user.email }}</div>
+
+
+            <div class="logout-warning">
+                <strong>⚠️ Внимание!</strong> После выхода вам потребуется снова ввести пароль для доступа к аккаунту.
+            </div>
+
+            <div class="logout-actions">
+                <form method="post" style="width: 100%;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-large">
+                        Да, выйти из аккаунта
+                    </button>
+                    <a href="{% url 'mailing:home' %}" class="btn btn-send btn-large">
+                        На главную
+                    </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

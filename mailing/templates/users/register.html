@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Регистрация - WS{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>Присоединяйтесь к WS!</h1>
+        <p>Создайте аккаунт для управления рассылками и вебинарами</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post" class="registration-form">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="form-errors">
+                <div class="error-message">Пожалуйста, исправьте ошибки в форме.</div>
+            </div>
+            {% endif %}
+
+            <div class="form-section">
+                <h3 class="section-title">Основная информация</h3>
+                <div class="form-grid">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="id_first_name" class="form-label">Имя</label>
+                            <input type="text" name="first_name" id="id_first_name" class="form-input" 
+                                   placeholder="Иван" required value="{{ form.first_name.value|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="id_last_name" class="form-label">Фамилия</label>
+                            <input type="text" name="last_name" id="id_last_name" class="form-input" 
+                                   placeholder="Иванов" required value="{{ form.last_name.value|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Контактная информация</h3>
+                <div class="form-grid">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="id_email" class="form-label">Email адрес</label>
+                            <input type="email" name="email" id="id_email" class="form-input" 
+                                   placeholder="your@email.com" required value="{{ form.email.value|default:'' }}">
+                            {% if form.email.errors %}
+                            <div class="field-errors">
+                                {% for error in form.email.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="id_phone" class="form-label">Телефон</label>
+                            <input type="tel" name="phone" id="id_phone" class="form-input" 
+                                   placeholder="+7 (999) 123-45-67" value="{{ form.phone.value|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Безопасность</h3>
+                <div class="form-grid">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="id_password1" class="form-label">Пароль</label>
+                            <input type="password" name="password1" id="id_password1" class="form-input" 
+                                   placeholder="Не менее 8 символов" required>
+                            {% if form.password1.errors %}
+                            <div class="field-errors">
+                                {% for error in form.password1.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="id_password2" class="form-label">Подтверждение</label>
+                            <input type="password" name="password2" id="id_password2" class="form-input" 
+                                   placeholder="Повторите пароль" required>
+                            {% if form.password2.errors %}
+                            <div class="field-errors">
+                                {% for error in form.password2.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Тип аккаунта</h3>
+                <div class="form-group">
+                    <div class="role-selector">
+                        <label class="role-option">
+                            <input type="radio" name="role" value="user" checked>
+                            <span class="role-card">
+                                <span class="role-icon">👤</span>
+                                <span class="role-info">
+                                    <strong>Пользователь</strong>
+                                    <span class="role-description">Работа с рассылками и клиентами</span>
+                                </span>
+                            </span>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" name="role" value="lector">
+                            <span class="role-card">
+                                <span class="role-icon">🎓</span>
+                                <span class="role-info">
+                                    <strong>Лектор</strong>
+                                    <span class="role-description">Проведение вебинаров и лекций</span>
+                                </span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="lector-notification" class="role-notification">
+                    <div class="notification-icon">🚧</div>
+                    <div class="notification-title">Функционал лектора в разработке</div>
+                    <div class="notification-text">
+                        В данный момент регистрация доступна только как пользователь. 
+                        Когда функционал лектора будет готов, вы сможете подать заявку 
+                        на изменение типа аккаунта в личном кабинете.
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-accent btn-large">Создать аккаунт</button>
+                <a href="{% url 'users:login' %}" class="btn btn-cancel">Уже есть аккаунт? Войти</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleRadios = document.querySelectorAll('input[name="role"]');
+    const lectorNotification = document.getElementById('lector-notification');
+
+    function toggleRoleNotification() {
+        const selectedRole = document.querySelector('input[name="role"]:checked').value;
+        lectorNotification.style.display = selectedRole === 'lector' ? 'block' : 'none';
+    }
+
+    roleRadios.forEach(radio => radio.addEventListener('change', toggleRoleNotification));
+    toggleRoleNotification();
+});
+</script>
+{% endblock %}
