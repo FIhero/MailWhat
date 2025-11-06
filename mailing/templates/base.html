@@ -7,9 +7,11 @@
     <title>{% block title %}Webinar Service{% endblock %}</title>
     
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
     <link rel="stylesheet" href="{% static 'css/components/buttons.css' %}">
     <link rel="stylesheet" href="{% static 'css/components/cards.css' %}">
     <link rel="stylesheet" href="{% static 'css/components/forms.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/forms-extended.css' %}">
     <link rel="stylesheet" href="{% static 'css/components/headers.css' %}">
     <link rel="stylesheet" href="{% static 'css/components/stats.css' %}">
     <link rel="stylesheet" href="{% static 'css/components/empty-states.css' %}">
@@ -18,6 +20,8 @@
     <link rel="stylesheet" href="{% static 'css/components/messages.css' %}">
     <link rel="stylesheet" href="{% static 'css/components/auth.css' %}">
     <link rel="stylesheet" href="{% static 'css/components/users.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components/status.css' %}">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -47,6 +51,7 @@
     {% include 'includes/modal.html' %}
     {% include 'includes/mailing_details_modal.html' %}
     {% include 'includes/mailing_export-modal.html' %}
+    {% include 'includes/mailing_error_time.html' %}
 
     
     <script src="{% static 'js/base.js' %}"></script>

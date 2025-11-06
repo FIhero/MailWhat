@@ -57,23 +57,50 @@
                         {% endif %}
                     </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.status.id_for_label }}" class="form-label">
-                            Статус рассылки
-                        </label>
-                        <select name="status" class="form-select" id="id_status">
-                            <option value="created" {% if form.status.value == 'created' %}selected{% endif %}>Создана</option>
-                            <option value="started" {% if form.status.value == 'started' %}selected{% endif %}>Запущена</option>
-                            <option value="completed" {% if form.status.value == 'completed' %}selected{% endif %}>Завершена</option>
-                        </select>
-                        {% if form.status.errors %}
-                        <div class="field-errors">
-                            {% for error in form.status.errors %}
-                                <span class="error-text">{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
+
+<div class="status-preview">
+    <h4>Статус рассылки:</h4>
+    <div id="auto-status" class="status-card status-created">
+        <div class="status-icon">⏳</div>
+        <div class="status-info">
+            <div class="status-title">Создана</div>
+            <div class="status-description">Ожидает времени начала</div>
+        </div>
+    </div>
+    <div class="status-time" id="status-time">
+        Время отправки: <span id="send-time">не указано</span>
+    </div>
+    
+    
+        <div class="form-group">
+    <div class="form-label-row">
+        <label class="form-label">
+            Время отправки
+        </label>
+        <button type="button" class="btn btn-filter btn-small" id="addSendTimeBtn">
+            ➕ Добавить время
+        </button>
+    </div>
+    
+    <div id="sendTimesContainer" class="send-times-container">
+        {% if object and object.sending_times.all %}
+            {% for time in object.sending_times.all %}
+            <div class="send-time-item">
+                <input type="datetime-local" 
+                       name="send_times" 
+                       value="{{ time.send_time|date:'Y-m-d\TH:i' }}"
+                       class="form-input send-time-input">
+                <button type="button" class="btn btn-danger btn-small remove-time-btn">🗑️</button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    
+    <div class="form-help">
+        Добавьте конкретное время для отправки рассылки
+    </div>
+</div>
+</div>
                 </div>
 
                 <div class="form-column">
@@ -158,6 +185,10 @@
                             <strong>Период:</strong>
                             <span id="preview-period" class="preview-date">не указан</span>
                         </div>
+                        <div class="preview-row">
+                            <strong>Статус:</strong>
+                            <span id="preview-status" class="preview-status status-created">Создана</span>
+                        </div>
                     </div>
                     
                     <div class="selected-recipients" id="selectedRecipients">
@@ -190,105 +221,274 @@
     </div>
 </div>
 
-<style>
-.search-box {
-    margin-bottom: 15px;
-}
 
-.search-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.client-item {
-    display: flex;
-    align-items: center;
-    padding: 8px;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    margin-bottom: 5px;
-    transition: all 0.3s ease;
-}
-
-.client-item:hover {
-    background-color: #f5f5f5;
-}
-
-.client-item.hidden {
-    display: none;
-}
-
-.client-email-preview {
-    color: #666;
-    font-size: 12px;
-}
-
-.selected-recipients {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
-}
-
-.recipients-list {
-    margin-top: 10px;
-}
-
-.recipient-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    margin-bottom: 5px;
-    border: 1px solid #e9ecef;
-}
-
-.recipient-info {
-    flex-grow: 1;
-}
-
-.recipient-name {
-    font-weight: 500;
-}
-
-.recipient-email {
-    font-size: 12px;
-    color: #666;
-}
-
-.remove-recipient {
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-}
-
-.remove-recipient:hover {
-    background: #c82333;
-}
-</style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
     const messageSelect = document.getElementById('id_message');
     const clientsCheckboxes = document.querySelectorAll('input[name="clients"]');
     const startTimeInput = document.getElementById('id_start_time');
     const endTimeInput = document.getElementById('id_end_time');
     const clientSearch = document.getElementById('clientSearch');
     const clientsContainer = document.getElementById('clientsContainer');
+    const addTimeBtn = document.getElementById('addSendTimeBtn');
+    const timesContainer = document.getElementById('sendTimesContainer');
     
-    // Поиск клиентов
+    function calculateStatus() {
+        const start = startTimeInput.value;
+        const end = endTimeInput.value;
+        
+        if (!start || !end) {
+            return { status: 'created', description: 'Укажите даты для определения статуса' };
+        }
+        
+        const now = new Date();
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        
+        if (endDate < now) {
+            return { 
+                status: 'completed', 
+                description: 'Время рассылки истекло',
+                time: `Завершена: ${formatDateTime(end)}`
+            };
+        } else if (startDate <= now) {
+            return { 
+                status: 'started', 
+                description: 'Рассылка активна и отправляет письма',
+                time: `Запущена: ${formatDateTime(start)}`
+            };
+        } else {
+            const timeUntilStart = Math.floor((startDate - now) / (1000 * 60));
+            let timeText;
+            
+            if (timeUntilStart < 60) {
+                timeText = `через ${timeUntilStart} мин`;
+            } else if (timeUntilStart < 1440) {
+                timeText = `через ${Math.floor(timeUntilStart / 60)} ч`;
+            } else {
+                timeText = `через ${Math.floor(timeUntilStart / 1440)} дн`;
+            }
+            
+            return { 
+                status: 'created', 
+                description: `Ожидает начала ${timeText}`,
+                time: `Начнётся: ${formatDateTime(start)}`
+            };
+        }
+    }
+    
+    function updateStatusDisplay() {
+        const statusInfo = calculateStatus();
+        const statusCard = document.getElementById('auto-status');
+        const sendTime = document.getElementById('send-time');
+        const previewStatus = document.getElementById('preview-status');
+        
+        if (statusCard) {
+            statusCard.className = `status-card status-${statusInfo.status}`;
+            statusCard.innerHTML = `
+                <div class="status-icon">${getStatusIcon(statusInfo.status)}</div>
+                <div class="status-info">
+                    <div class="status-title">${getStatusTitle(statusInfo.status)}</div>
+                    <div class="status-description">${statusInfo.description}</div>
+                </div>
+            `;
+        }
+        
+        if (sendTime) {
+            sendTime.textContent = statusInfo.time || 'не указано';
+        }
+        
+        if (previewStatus) {
+            previewStatus.textContent = getStatusTitle(statusInfo.status);
+            previewStatus.className = `preview-status status-${statusInfo.status}`;
+        }
+    }
+    
+    function getStatusIcon(status) {
+        const icons = {
+            'created': '⏳',
+            'started': '🚀', 
+            'completed': '✅'
+        };
+        return icons[status] || '❓';
+    }
+    
+    function getStatusTitle(status) {
+        const titles = {
+            'created': 'Создана',
+            'started': 'Запущена',
+            'completed': 'Завершена'
+        };
+        return titles[status] || 'Неизвестно';
+    }
+    
+    function formatDateTime(datetimeStr) {
+        if (!datetimeStr) return '';
+        const date = new Date(datetimeStr);
+        return date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function getTimeConstraints() {
+        const start = startTimeInput.value;
+        const end = endTimeInput.value;
+        const now = new Date();
+        
+        let minDate = now;
+        let maxDate = end ? new Date(end) : null;
+        
+        if (start) {
+            const startDate = new Date(start);
+            if (startDate > now) {
+                minDate = startDate;
+            }
+        }
+        
+        return {
+            min: minDate.toISOString().slice(0, 16),
+            max: maxDate ? maxDate.toISOString().slice(0, 16) : null
+        };
+    }
+
+    function addTimeField() {
+    console.log('Добавляем поле времени...');
+    
+    const statusInfo = calculateStatus();
+    const start = startTimeInput.value;
+    const end = endTimeInput.value;
+    
+    // Проверка условий для добавления времени
+    if (!start || !end) {
+        showTimeErrorModal('', 'no_dates');
+        return;
+    }
+    
+    if (statusInfo.status === 'completed') {
+        showTimeErrorModal('', 'completed');
+        return;
+    }
+    
+    const constraints = getTimeConstraints();
+    
+    if (constraints.max && new Date(constraints.max) < new Date()) {
+        showTimeErrorModal('', 'expired');
+        return;
+    }
+    
+    // Создание нового поля времени
+    const timeItem = document.createElement('div');
+    timeItem.className = 'send-time-item';
+    
+    let inputHtml = `<input type="datetime-local" 
+           name="send_times" 
+           class="form-input send-time-input"
+           min="${constraints.min}"`;
+    
+    if (constraints.max) {
+        inputHtml += ` max="${constraints.max}"`;
+    }
+    
+    inputHtml += ` title="Время должно быть между ${formatDateTime(constraints.min)} и ${constraints.max ? formatDateTime(constraints.max) : 'неограничено'}" required>`;
+    
+    timeItem.innerHTML = inputHtml + `
+        <button type="button" class="btn btn-danger btn-small remove-time-btn">🗑️</button>
+    `;
+    
+    const timeInput = timeItem.querySelector('.send-time-input');
+    timeInput.addEventListener('change', function() {
+        if (!validateTimeInput(this)) {
+            showTimeErrorModal('Выбранное время не соответствует требованиям', 'past_time');
+        }
+    });
+    
+    const removeBtn = timeItem.querySelector('.remove-time-btn');
+    removeBtn.addEventListener('click', function() {
+        timeItem.remove();
+        updateTimeFieldsVisibility();
+    });
+    
+    timesContainer.appendChild(timeItem);
+    updateTimeFieldsVisibility();
+}
+
+function validateTimeInput(input) {
+    const timeValue = input.value;
+    if (!timeValue) return true;
+    
+    const timeDate = new Date(timeValue);
+    const now = new Date();
+    const start = startTimeInput.value;
+    const end = endTimeInput.value;
+    const startDate = start ? new Date(start) : null;
+    const endDate = end ? new Date(end) : null;
+    
+    let isValid = true;
+    
+    if (timeDate < now) {
+        isValid = false;
+    } else if (startDate && timeDate < startDate) {
+        isValid = false;
+    } else if (endDate && timeDate > endDate) {
+        isValid = false;
+    }
+    
+    if (!isValid) {
+        input.value = '';
+        input.focus();
+    }
+    
+    return isValid;
+}
+
+    function updateAllTimeFields() {
+        const constraints = getTimeConstraints();
+        const timeInputs = document.querySelectorAll('.send-time-input');
+        
+        timeInputs.forEach(input => {
+            input.min = constraints.min;
+            if (constraints.max) {
+                input.max = constraints.max;
+            } else {
+                input.removeAttribute('max');
+            }
+            
+            input.title = `Время должно быть между ${formatDateTime(constraints.min)} и ${constraints.max ? formatDateTime(constraints.max) : 'неограничено'}`;
+            
+            if (input.value) {
+                validateTimeInput(input);
+            }
+        });
+    }
+
+    function updateTimeFieldsVisibility() {
+        const statusInfo = calculateStatus();
+        const timeManagementSection = document.querySelector('.form-group .form-label-row').closest('.form-group');
+        const addTimeBtn = document.getElementById('addSendTimeBtn');
+        
+        if (statusInfo.status === 'completed') {
+            if (timeManagementSection) timeManagementSection.style.display = 'none';
+            if (addTimeBtn) addTimeBtn.disabled = true;
+        } else {
+            if (timeManagementSection) timeManagementSection.style.display = 'block';
+            
+            const start = startTimeInput.value;
+            const end = endTimeInput.value;
+            const now = new Date();
+            const endDate = end ? new Date(end) : null;
+            
+            if (addTimeBtn) {
+                addTimeBtn.disabled = !start || !end || (endDate && endDate < now);
+            }
+            
+            updateAllTimeFields();
+        }
+    }
+    
+    // ===== ПОИСК КЛИЕНТОВ =====
+    
     if (clientSearch) {
         clientSearch.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase().trim();
@@ -307,22 +507,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Обновление предпросмотра сообщения
-    messageSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        
-        if (selectedOption.text && selectedOption.value) {
-            document.getElementById('preview-subject').textContent = selectedOption.text;
+    // ===== ПРЕДПРОСМОТР СООБЩЕНИЯ =====
+    
+    if (messageSelect) {
+        messageSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
             
-            const messageBody = selectedOption.getAttribute('data-body');
-            document.getElementById('preview-body').textContent = messageBody || 'Текст не доступен';
-        } else {
-            document.getElementById('preview-subject').textContent = 'Тема сообщения появится здесь';
-            document.getElementById('preview-body').textContent = 'Текст сообщения появится здесь после выбора';
-        }
-    });
-
-    // Обновление списка выбранных получателей
+            if (selectedOption.text && selectedOption.value) {
+                document.getElementById('preview-subject').textContent = selectedOption.text;
+                
+                const messageBody = selectedOption.getAttribute('data-body');
+                document.getElementById('preview-body').textContent = messageBody || 'Текст не доступен';
+            } else {
+                document.getElementById('preview-subject').textContent = 'Тема сообщения появится здесь';
+                document.getElementById('preview-body').textContent = 'Текст сообщения появится здесь после выбора';
+            }
+        });
+    }
+    
+    // ===== УПРАВЛЕНИЕ ПОЛУЧАТЕЛЯМИ =====
+    
     function updateRecipientsList() {
         const selectedClients = [];
         const recipientsList = document.getElementById('recipients-list');
@@ -341,10 +545,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Обновляем счетчик
         document.getElementById('preview-recipients-count').textContent = selectedClients.length + ' получателей';
         
-        // Обновляем список
         recipientsList.innerHTML = '';
         
         if (selectedClients.length === 0) {
@@ -365,7 +567,6 @@ document.addEventListener('DOMContentLoaded', function() {
             recipientsList.appendChild(recipientItem);
         });
         
-        // Добавляем обработчики для кнопок удаления
         document.querySelectorAll('.remove-recipient').forEach(button => {
             button.addEventListener('click', function() {
                 const clientId = this.getAttribute('data-client-id');
@@ -378,39 +579,56 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Обновление периода
     function updatePeriod() {
         const start = startTimeInput.value;
         const end = endTimeInput.value;
+        
         if (start && end) {
             document.getElementById('preview-period').textContent = 
                 formatDateTime(start) + ' - ' + formatDateTime(end);
         } else {
             document.getElementById('preview-period').textContent = 'не указан';
         }
+        
+        updateStatusDisplay();
+        updateTimeFieldsVisibility();
     }
     
-    function formatDateTime(datetimeStr) {
-        if (!datetimeStr) return '';
-        const date = new Date(datetimeStr);
-        return date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
     
-    // Инициализация
     clientsCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', updateRecipientsList);
     });
     
-    startTimeInput.addEventListener('change', updatePeriod);
-    endTimeInput.addEventListener('change', updatePeriod);
+    if (startTimeInput) {
+        startTimeInput.addEventListener('change', updatePeriod);
+        startTimeInput.addEventListener('change', updateAllTimeFields);
+    }
+    if (endTimeInput) {
+        endTimeInput.addEventListener('change', updatePeriod);
+        endTimeInput.addEventListener('change', updateAllTimeFields);
+    }
+    
+    if (addTimeBtn) {
+        addTimeBtn.addEventListener('click', addTimeField);
+        console.log('Кнопка добавления времени инициализирована');
+    }
     
     updateRecipientsList();
     updatePeriod();
+    updateStatusDisplay();
+    updateTimeFieldsVisibility();
+
+    if (messageSelect && messageSelect.value) {
+        messageSelect.dispatchEvent(new Event('change'));
+    }
     
-    if (messageSelect.value) {
+    updateRecipientsList();
+    updatePeriod();
+    updateStatusDisplay();
+    updateTimeFieldsVisibility();
+    
+    if (messageSelect && messageSelect.value) {
         messageSelect.dispatchEvent(new Event('change'));
     }
 });

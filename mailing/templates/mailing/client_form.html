@@ -131,7 +131,7 @@
         Отмена
     </a>
     {% if object %}
-    <a href="#" class="btn btn-danger delete-btn"
+    <a href="#" class="btn btn-danger delete-btn btn-large"
         data-delete-url="{% url 'mailing:client_delete' object.pk %}"
         data-object-name="{{ object.full_name }}">
             Удалить клиента

@@ -1,6 +1,5 @@
-from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.contrib.auth.backends import ModelBackend
 
 User = get_user_model()
 
@@ -12,7 +11,7 @@ class EmailBackend(ModelBackend):
         print(f"Password provided: {bool(password)}")
 
         if username is None:
-            username = kwargs.get('email')
+            username = kwargs.get("email")
 
         try:
             user = User.objects.get(email=username)

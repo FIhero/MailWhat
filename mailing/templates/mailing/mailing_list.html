@@ -54,7 +54,7 @@
                     <div class="mailing-info">
                         <h3 class="mailing-title">{{ mailing.message.message_subject }}</h3>
                         <div class="mailing-meta">
-                            <span class="mailing-status status-{{ mailing.status }}">
+                            <span class="mailing-status -{{ mailing.status }}">
                                 {% if mailing.status == 'created' %}Создана
                                 {% elif mailing.status == 'started' %}Запущена  
                                 {% elif mailing.status == 'completed' %}Завершена
@@ -101,6 +101,21 @@
                         </div>
                         <div class="detail-item">
                             <strong>Период:</strong> {{ mailing.start_time|date:"d.m.Y H:i" }} - {{ mailing.end_time|date:"d.m.Y H:i" }}
+                        </div>
+                        <div class="detail-item">
+                            <strong>Время отправки:</strong>
+                            <div class="sending-times">
+                                {% if mailing.sending_times.all %}
+                                    {% for time in mailing.sending_times.all %}
+                                    <span class="time-tag {% if time.is_sent %}time-sent{% else %}time-pending{% endif %}">
+                                        {{ time.send_time|date:"d.m.Y H:i" }}
+                                        {% if time.is_sent %}✅{% else %}⏳{% endif %}
+                                    </span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="time-none">По расписанию</span>
+                                {% endif %}
+                            </div>
                         </div>
                         {% if mailing.clients.all %}
                         <div class="detail-item">
@@ -151,8 +166,6 @@
         {% endif %}
     {% endif %}
 </div>
-
-
 
 <script>
 function sendMailing(mailingId) {

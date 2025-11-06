@@ -1,6 +1,7 @@
-from django.core.mail import send_mail
 from django.conf import settings
+from django.core.mail import send_mail
 from django.template.loader import render_to_string
+
 from .models import VerificationCode
 
 
@@ -12,11 +13,14 @@ def send_verification_code(email, purpose):
         purpose_display = verification_code.get_purpose_display_name()
 
         subject = f"Код подтверждения для {purpose_display}"
-        html_message = render_to_string('users/emails/simple_code_email.html', {
-            'code': verification_code.code,
-            'purpose': purpose_display,
-            'email': email
-        })
+        html_message = render_to_string(
+            "users/emails/simple_code_email.html",
+            {
+                "code": verification_code.code,
+                "purpose": purpose_display,
+                "email": email,
+            },
+        )
 
         send_mail(
             subject=subject,
@@ -37,9 +41,7 @@ def verify_code(email, code, purpose):
     """Проверяет код подтверждения"""
     try:
         verification_code = VerificationCode.objects.get(
-            email=email,
-            code=code,
-            purpose=purpose
+            email=email, code=code, purpose=purpose
         )
 
         if verification_code.is_valid():

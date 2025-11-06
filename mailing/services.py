@@ -1,12 +1,17 @@
 import json
-from django.core.mail import send_mail
+import logging
+
 from django.conf import settings
+from django.core.mail import send_mail
+
 from mailing.models import MailingAttempt
+
+logger = logging.getLogger("mailing")
 
 
 def send_mailing_service(mailing):
     """Сервис для отправки рассылки с детальным логированием"""
-    print(f"Начало отправки рассылки #{mailing.id}")
+    logger.info(f"Начало отправки рассылки #{mailing.id}")
 
     try:
         clients = mailing.clients.all()
@@ -16,10 +21,10 @@ def send_mailing_service(mailing):
             error_msg = "Ошибка: Нет клиентов для отправки"
             MailingAttempt.objects.create(
                 mailing_list=mailing,
-                status='failure',
+                status="failure",
                 answer=error_msg,
                 recipient_details="[]",
-                owner=mailing.owner
+                owner=mailing.owner,
             )
             return False, error_msg
 
@@ -45,34 +50,38 @@ def send_mailing_service(mailing):
                     fail_silently=False,
                 )
                 sent_count += 1
-                recipient_details.append({
-                    'email': client.email,
-                    'full_name': client.full_name,
-                    'status': 'success',
-                    'message': 'Успешно отправлено',
-                    'timestamp': None
-                })
+                recipient_details.append(
+                    {
+                        "email": client.email,
+                        "full_name": client.full_name,
+                        "status": "success",
+                        "message": "Успешно отправлено",
+                        "timestamp": None,
+                    }
+                )
                 print(f"✅ Успешно отправлено для: {client.email}")
 
             except Exception as e:
                 failed_count += 1
                 error_msg = str(e)
-                recipient_details.append({
-                    'email': client.email,
-                    'full_name': client.full_name,
-                    'status': 'failure',
-                    'message': error_msg,
-                    'timestamp': None
-                })
+                recipient_details.append(
+                    {
+                        "email": client.email,
+                        "full_name": client.full_name,
+                        "status": "failure",
+                        "message": error_msg,
+                        "timestamp": None,
+                    }
+                )
                 print(f"Ошибка для {client.email}: {e}")
 
-        recipient_details.sort(key=lambda x: (x['status'] != 'failure', x['email']))
+        recipient_details.sort(key=lambda x: (x["status"] != "failure", x["email"]))
 
         if failed_count == 0:
-            status = 'success'
+            status = "success"
             short_response = f"Успешно отправлено {sent_count} писем"
         else:
-            status = 'failure'
+            status = "failure"
             short_response = f"Отправлено: {sent_count}, Ошибок: {failed_count}"
 
         print(f"Создаем запись MailingAttempt с деталями")
@@ -82,7 +91,7 @@ def send_mailing_service(mailing):
             status=status,
             answer=short_response,
             recipient_details=json.dumps(recipient_details, ensure_ascii=False),
-            owner = mailing.owner
+            owner=mailing.owner,
         )
 
         print(f"Запись создана с ID: {attempt.id}")
@@ -95,10 +104,35 @@ def send_mailing_service(mailing):
 
         MailingAttempt.objects.create(
             mailing_list=mailing,
-            status='failure',
+            status="failure",
             answer=error_msg,
             recipient_details="[]",
-            owner = mailing.owner
+            owner=mailing.owner,
         )
         return False, error_msg
 
+
+def check_mailing_schedule():
+    """Проверяет и обновляет статусы рассылок по расписанию"""
+    from django.utils import timezone
+
+    from .models import Mailing
+
+    now = timezone.now()
+
+    mailings_to_start = Mailing.objects.filter(
+        status=Mailing.STATUS_CREATED, start_time__lte=now
+    )
+
+    for mailing in mailings_to_start:
+        mailing.status = Mailing.STATUS_STARTED
+        mailing.save()
+        send_mailing_service(mailing)
+
+    mailings_to_complete = Mailing.objects.filter(
+        status=Mailing.STATUS_STARTED, end_time__lt=now
+    )
+
+    for mailing in mailings_to_complete:
+        mailing.status = Mailing.STATUS_COMPLETED
+        mailing.save()
